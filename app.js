@@ -37,12 +37,12 @@ app.post('/sendmailCareer', async (req, res) => {
         from: "divyalana6@gmail.com",
         to: "priyanshuchaudhary148@gmail.com",
         subject: `Career: ${name}`,
-        text: `${ask}\nEmail: ${email}\nMessage: ${text}`,
-        attachments: [
-            {
-                href: `${url}`
-            }
-        ],
+        text: `${ask}\nEmail: ${email}\nMessage: ${text} \n Resume: ${url}`,
+        // attachments: [
+        //     {
+        //         href: `${url}`
+        //     }
+        // ],
         // attachments: temp,
     }
     // transporter.sendMail(mailOptions, function (error, info) {
