@@ -1,7 +1,8 @@
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
-  }
+}
 const express = require('express')
+const sgMail = require('@sendgrid/mail')
 const cors = require('cors')
 const nodemailer = require('nodemailer')
 const app = express();
@@ -14,58 +15,91 @@ app.use(cors());
 
 app.post('/sendmailCareer', async (req, res) => {
     const { ask, name, email, text, url } = await req.body;
-    let transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.SENDER_MAIL || 'asdf',
-            pass: process.env.SENDER_PASS || 'sdf',
-        },
-    });
+    // let transporter = nodemailer.createTransport({
+    //     service: 'gmail',
+    //     auth: {
+    //         user: process.env.SENDER_MAIL || 'asdf',
+    //         pass: process.env.SENDER_PASS || 'sdf',
+    //     },
+    // });
+
+    //     array.push(url);
+
+    // array.forEach(function (data) {
+    //         temp.push({
+    //             path: data,
+    //             filename: 'resume.pdf'
+    //         });
+    sgMail.setApiKey("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")
     var mailOptions = {
         from: process.env.SENDER_MAIL,
         to: process.env.CAREER_MAIL,
         subject: `Career: ${name}`,
         text: `${ask}\nEmail: ${email}\nMessage: ${text}`,
-        attachments:[
+        attachments: [
             {
                 href: `${url}`
             }
         ],
+        attachments: temp,
     }
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            //   console.log(error);
-            return res.send({ success: false });
-        } else {
-            // console.log('Email sent: ' + info.response);
+    // transporter.sendMail(mailOptions, function (error, info) {
+    //     if (error) {
+    //         //   console.log(error);
+    //         return res.send({ success: false });
+    //     } else {
+    //         // console.log('Email sent: ' + info.response);
+    //         return res.send({ success: true });
+    //     }
+    // });
+    sgMail.send(mailOptions)
+        .then(() => {
             return res.send({ success: true });
-        }
-    });
+        })
+        .catch(() => {
+            return res.send({ success: false });
+        })
 })
+
+
+
 app.post('/sendmailContact', async (req, res) => {
     const { ask, name, email, text } = await req.body;
-    let transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.SENDER_MAIL || 'someothermail',
-            pass: process.env.SENDER_PASS || 'temperary-password',
-        },
-    });
+    // let transporter = nodemailer.createTransport({
+    //     service: 'gmail',
+    //     auth: {
+    //         // host: "herokuapp",
+    //         port: 465,
+    //         secure: true,
+    //         user: process.env.SENDER_MAIL || 'someothermail',
+    //         pass: process.env.SENDER_PASS || 'temperary-password',
+    //     },
+    // });
+    sgMail.setApiKey("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")
     var mailOptions = {
-        from: process.env.SENDER_MAIL,
-        to: process.env.CONTACT_MAIL,
+        from: "priyachaudhary272.pc@gmail.com",
+        to: "priyanshuchaudhary148@gmail.com",
+        // from: process.env.SENDER_MAIL,
+        // to: process.env.CONTACT_MAIL,
         subject: `Contact: ${name}`,
         text: `${ask}\nEmail: ${email}\nMessage: ${text}`,
-}
-      transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-        //   console.log(error);
-        return res.send({ success: false, error: error });
-    } else {
-        // console.log('Email sent: ' + info.response);
-        return res.send({ success: true });
     }
-});
+    // transporter.sendMail(mailOptions, function (error, info) {
+    //     if (error) {
+    //         //   console.log(error);
+    //         return res.send({ success: false, error: error });
+    //     } else {
+    //         // console.log('Email sent: ' + info.response);
+    //         return res.send({ success: true });
+    //     }
+    // });
+    sgMail.send(mailOptions)
+        .then(() => {
+            return res.send({ success: true });
+        })
+        .catch(() => {
+            return res.send({ success: false });
+        })
 })
 app.listen(PORT, () => {
     console.log('Connecter to the port 5000')
