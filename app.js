@@ -75,9 +75,9 @@ app.post('/sendmailContact', async (req, res) => {
     //         pass: process.env.SENDER_PASS || 'temperary-password',
     //     },
     // });
-    sgMail.setApiKey("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")
+    sgMail.setApiKey("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")
     var mailOptions = {
-        from: "priyachaudhary272.pc@gmail.com",
+        from: "divyalana6@gmail.com",
         to: "priyanshuchaudhary148@gmail.com",
         // from: process.env.SENDER_MAIL,
         // to: process.env.CONTACT_MAIL,
