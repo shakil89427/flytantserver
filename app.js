@@ -30,10 +30,12 @@ app.post('/sendmailCareer', async (req, res) => {
     //             path: data,
     //             filename: 'resume.pdf'
     //         });
-    sgMail.setApiKey("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")
+    sgMail.setApiKey("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")
     var mailOptions = {
-        from: process.env.SENDER_MAIL,
-        to: process.env.CAREER_MAIL,
+        // from: process.env.SENDER_MAIL,
+        // to: process.env.CAREER_MAIL,
+        from: "divyalana6@gmail.com",
+        to: "priyanshuchaudhary148@gmail.com",
         subject: `Career: ${name}`,
         text: `${ask}\nEmail: ${email}\nMessage: ${text}`,
         attachments: [
