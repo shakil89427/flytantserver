@@ -60,7 +60,7 @@ app.post('/sendmailContact', async (req, res) => {
       transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
         //   console.log(error);
-        return res.send({ success: false });
+        return res.send({ success: false, error: error });
     } else {
         // console.log('Email sent: ' + info.response);
         return res.send({ success: true });
