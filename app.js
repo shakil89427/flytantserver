@@ -17,10 +17,8 @@ app.post('/sendmailCareer', async (req, res) => {
     let transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: 'priyachaudhary272.pc@gmail.com',
-            pass: '272272272',
-            // user: process.env.SENDER_MAIL || 'priyachaudhary272.pc@gmail.com',
-            // pass: process.env.SENDER_PASS || '272272272',
+            user: process.env.SENDER_MAIL || 'asdf',
+            pass: process.env.SENDER_PASS || 'sdf',
         },
     });
     var mailOptions = {
@@ -52,13 +50,9 @@ app.post('/sendmailContact', async (req, res) => {
         auth: {
             user: process.env.SENDER_MAIL || 'someothermail',
             pass: process.env.SENDER_PASS || 'temperary-password',
-            // user: 'priyachaudhary272.pc@gmail.com',
-            // pass: '272272272',
         },
     });
     var mailOptions = {
-        // from: "priyachaudhary272.pc@gmail.com",
-        // to: "priyanshuchaudhary148@gmail.com",
         from: process.env.SENDER_MAIL,
         to: process.env.CONTACT_MAIL,
         subject: `Contact: ${name}`,
