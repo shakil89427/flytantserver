@@ -43,7 +43,7 @@ app.post('/sendmailCareer', async (req, res) => {
                 href: `${url}`
             }
         ],
-        attachments: temp,
+        // attachments: temp,
     }
     // transporter.sendMail(mailOptions, function (error, info) {
     //     if (error) {
