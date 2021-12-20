@@ -41,7 +41,6 @@ app.post('/sendmailCareer', async (req, res) => {
             return res.send({ success: true });
         }
     });
-    return res.send({ success: true })
 })
 app.post('/sendmailContact', async (req, res) => {
     const { ask, name, email, text } = await req.body;
@@ -67,7 +66,6 @@ app.post('/sendmailContact', async (req, res) => {
         return res.send({ success: true });
     }
 });
-return res.send({ success: true })
 })
 app.listen(PORT, () => {
     console.log('Connecter to the port 5000')
