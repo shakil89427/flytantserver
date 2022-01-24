@@ -30,6 +30,23 @@ app.post('/sendmailCareer', async (req, res) => {
             return res.send({ success: false });
         })
 })
+app.post('/sendmailBrandsContact', async (req, res) => {
+    const { name, brandname, email, message, contact } = await req.body;
+    sgMail.setApiKey(process.env.SGAPIKEY)
+    var mailOptions = {
+        from: process.env.SENDER_MAIL,
+        to: process.env.BRANDCONTACT_MAIL,
+        subject: `Career: ${name}`,
+        text: `Name: ${name}\nEmail: ${email}\nContact: ${contact}\nBrand Name: ${brandname}\nMessage: ${message} \nResume: ${url}`,
+    }
+    sgMail.send(mailOptions)
+        .then(() => {
+            return res.send({ success: true });
+        })
+        .catch(() => {
+            return res.send({ success: false });
+        })
+})
 
 
 
@@ -48,7 +65,7 @@ app.post('/sendmailContact', async (req, res) => {
         from: process.env.SENDER_MAIL,
         to: process.env.CONTACT_MAIL,
         subject: `Contact: ${name}`,
-        text: `${ask}\nEmail: ${email}\nMessage: ${text}`,
+        text: `Question: ${ask}\nEmail: ${email}\nMessage: ${text}`,
     }
     // transporter.sendMail(mailOptions, function (error, info) {
     //     if (error) {
