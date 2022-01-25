@@ -1,12 +1,13 @@
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
-}
 const express = require('express')
 const sgMail = require('@sendgrid/mail')
 const cors = require('cors')
 const nodemailer = require('nodemailer')
 const app = express();
 const PORT = process.env.PORT || 5000;
+// const PORT = 5000;
+// if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+    // }
 
 
 app.use(express.urlencoded({ extended: true }))
@@ -36,8 +37,8 @@ app.post('/sendmailBrandsContact', async (req, res) => {
     var mailOptions = {
         from: process.env.SENDER_MAIL,
         to: process.env.BRANDCONTACT_MAIL,
-        subject: `Career: ${name}`,
-        text: `Name: ${name}\nEmail: ${email}\nContact: ${contact}\nBrand Name: ${brandname}\nMessage: ${message} \nResume: ${url}`,
+        subject: `Brands: ${name}`,
+        text: `Name: ${name}\nEmail: ${email}\nContact: ${contact}\nBrand Name: ${brandname}\nMessage: ${message}`,
     }
     sgMail.send(mailOptions)
         .then(() => {
