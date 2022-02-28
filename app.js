@@ -32,13 +32,14 @@ app.post('/sendmailCareer', async (req, res) => {
         })
 })
 app.post('/sendmailBrandsContact', async (req, res) => {
-    const { name, brandname, email, message, contact } = await req.body;
+    const { name, brandname, email, message, contact, code } = await req.body;
+    console.log(req.body);
     sgMail.setApiKey(process.env.SGAPIKEY)
     var mailOptions = {
         from: process.env.SENDER_MAIL,
         to: process.env.BRANDCONTACT_MAIL,
         subject: `Brands: ${name}`,
-        text: `Name: ${name}\nEmail: ${email}\nContact: ${contact}\nBrand Name: ${brandname}\nMessage: ${message}`,
+        text: `Name: ${name}\nEmail: ${email}\nContact: +${code} ${contact}\nBrand Name: ${brandname}\nMessage: ${message}`,
     }
     sgMail.send(mailOptions)
         .then(() => {
