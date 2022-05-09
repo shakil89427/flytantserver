@@ -1,91 +1,275 @@
-const express = require('express')
-const sgMail = require('@sendgrid/mail')
-const cors = require('cors')
-const nodemailer = require('nodemailer')
+const express = require("express");
+const sgMail = require("@sendgrid/mail");
+const cors = require("cors");
+const axios = require("axios");
+const { response } = require("express");
 const app = express();
 const PORT = process.env.PORT || 5000;
-// const PORT = 5000;
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
-    }
-
-
-app.use(express.urlencoded({ extended: true }))
-app.use(express.json())
+if (process?.env?.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(cors());
 
-app.post('/sendmailCareer', async (req, res) => {
-    const { ask, name, email, text, url } = await req.body;
-    sgMail.setApiKey(process.env.SGAPIKEY)
-    var mailOptions = {
+/* Port listener */
+app.listen(PORT, () => {
+  console.log(`Listening to Port ${PORT}`);
+});
+
+/* Basic route for test */
+app.get("/", (req, res) => {
+  res.send("Server Running");
+});
+
+async function run() {
+  /* Send Career Mail */
+  app.post("/sendmailCareer", async (req, res) => {
+    try {
+      const { ask, name, email, text, url } = await req.body;
+      sgMail.setApiKey(process.env.SGAPIKEY);
+      var mailOptions = {
         from: process.env.SENDER_MAIL,
         to: process.env.CAREER_MAIL,
         subject: `Career: ${name}`,
         text: `${ask}\nEmail: ${email}\nMessage: ${text} \nResume: ${url}`,
-    }
-    sgMail.send(mailOptions)
+      };
+      sgMail
+        .send(mailOptions)
         .then(() => {
-            return res.send({ success: true });
+          return res.send({ success: true });
         })
         .catch(() => {
-            return res.send({ success: false });
-        })
-})
-app.post('/sendmailBrandsContact', async (req, res) => {
-    const { name, brandname, email, message, contact, code } = await req.body;
-    console.log(req.body);
-    sgMail.setApiKey(process.env.SGAPIKEY)
-    var mailOptions = {
+          return res.send({ success: false });
+        });
+    } catch (err) {
+      res.send({ success: false });
+    }
+  });
+
+  /* Send Brand contact mail */
+  app.post("/sendmailBrandsContact", async (req, res) => {
+    try {
+      const { name, brandname, email, message, contact, code } = await req.body;
+      console.log(req.body);
+      sgMail.setApiKey(process.env.SGAPIKEY);
+      var mailOptions = {
         from: process.env.SENDER_MAIL,
         to: process.env.BRANDCONTACT_MAIL,
         subject: `Brands: ${name}`,
         text: `Name: ${name}\nEmail: ${email}\nContact: +${code} ${contact}\nBrand Name: ${brandname}\nMessage: ${message}`,
-    }
-    sgMail.send(mailOptions)
+      };
+      sgMail
+        .send(mailOptions)
         .then(() => {
-            return res.send({ success: true });
+          return res.send({ success: true });
         })
         .catch(() => {
-            return res.send({ success: false });
-        })
-})
+          return res.send({ success: false });
+        });
+    } catch (err) {
+      res.send({ success: false });
+    }
+  });
 
-
-
-app.post('/sendmailContact', async (req, res) => {
-    const { ask, name, email, text } = await req.body;
-    // let transporter = nodemailer.createTransport({
-    //     service: 'gmail',
-    //     auth: {
-    //         secure: true,
-    //         user: process.env.SENDER_MAIL || 'someothermail',
-    //         pass: process.env.SENDER_PASS || 'temperary-password',
-    //     },
-    // });
-    sgMail.setApiKey(process.env.SGAPIKEY)
-    var mailOptions = {
+  /* Send contact mail */
+  app.post("/sendmailContact", async (req, res) => {
+    try {
+      const { ask, name, email, text } = await req.body;
+      sgMail.setApiKey(process.env.SGAPIKEY);
+      var mailOptions = {
         from: process.env.SENDER_MAIL,
         to: process.env.CONTACT_MAIL,
         subject: `Contact: ${name}`,
         text: `Question: ${ask}\nEmail: ${email}\nMessage: ${text}`,
-    }
-    // transporter.sendMail(mailOptions, function (error, info) {
-    //     if (error) {
-    //         //   console.log(error);
-    //         return res.send({ success: false, error: error });
-    //     } else {
-    //         // console.log('Email sent: ' + info.response);
-    //         return res.send({ success: true });
-    //     }
-    // });
-    sgMail.send(mailOptions)
+      };
+      sgMail
+        .send(mailOptions)
         .then(() => {
-            return res.send({ success: true });
+          return res.send({ success: true });
         })
         .catch(() => {
-            return res.send({ success: false });
-        })
-})
-app.listen(PORT, () => {
-    console.log('Connecter to the port 5000')
-})
+          return res.send({ success: false });
+        });
+    } catch (err) {
+      res.send({ success: false });
+    }
+  });
+
+  /* Get instagram tokens and basic info */
+  app.post("/instainfo", async (req, res) => {
+    try {
+      const response1 = await axios.post(
+        "https://api.instagram.com/oauth/access_token",
+        `client_id=${process.env.INSTAGRAM_CLIENT_ID}&client_secret=${process.env.INSTAGRAM_CLIENT_SECRET}&grant_type=authorization_code&redirect_uri=${process.env.INSTAGRAM_REDIRECT_URI}&code=${req.body.code}`,
+        { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+      );
+
+      const response2 = await axios.get(
+        "https://graph.instagram.com/access_token",
+        {
+          params: {
+            grant_type: "ig_exchange_token",
+            client_secret: process.env.INSTAGRAM_CLIENT_SECRET,
+            access_token: response1.data.access_token,
+          },
+        }
+      );
+
+      const tokenInfo = {
+        access_token: response2.data.access_token,
+        tokenExpires: Date.now() + response2.data.expires_in * 1000,
+      };
+
+      const response3 = await axios.get("https://graph.instagram.com/me", {
+        params: {
+          fields: "id,username",
+          access_token: tokenInfo.access_token,
+        },
+      });
+
+      const userInfo = {
+        username: response3.data.username,
+        instaId: response3.data.id,
+        ...tokenInfo,
+      };
+      res.send(userInfo);
+    } catch (err) {
+      res.status(404).send("Oh uh, something went wrong");
+    }
+  });
+
+  /* Get toutube channelId */
+  app.post("/youtubeinfo", async (req, res) => {
+    try {
+      const { token } = req.body;
+      const response = await axios.get(
+        "https://www.googleapis.com/youtube/v3/channels",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: {
+            part: "id",
+            mine: true,
+          },
+        }
+      );
+      res.send({ channelId: response.data.items[0].id });
+    } catch (err) {
+      res.status(404).send("Oh uh, something went wrong");
+    }
+  });
+
+  /* Get youtube data */
+  app.post("/youtubedata", async (req, res) => {
+    try {
+      const response1 = await axios.get(
+        "https://www.googleapis.com/youtube/v3/channels",
+        {
+          params: {
+            id: req.body.channelId,
+            part: "snippet,statistics",
+            key: process.env.GOOGLE_API_KEY,
+          },
+        }
+      );
+
+      const response2 = await axios.get(
+        "https://www.googleapis.com/youtube/v3/search",
+        {
+          params: {
+            part: "id",
+            channelId: req.body.channelId,
+            maxResults: 20,
+            order: "date",
+            type: "video",
+            key: process.env.GOOGLE_API_KEY,
+          },
+        }
+      );
+
+      if (response2?.data?.items?.length > 0) {
+        const videoIds = response2.data.items.map((item) => item.id.videoId);
+        const response3 = await axios.get(
+          "https://www.googleapis.com/youtube/v3/videos",
+          {
+            params: {
+              part: "snippet,statistics",
+              id: videoIds.toString(),
+              key: process.env.GOOGLE_API_KEY,
+            },
+          }
+        );
+        res.send({
+          channelInfo: response1.data.items[0],
+          videosInfo: response3.data.items,
+        });
+      } else {
+        res.send({ channelInfo: response1.data.items[0] });
+      }
+    } catch (err) {
+      res.status(404).send("Oh, something went wrong");
+    }
+  });
+
+  /* Get twitter token and basic info */
+  app.post("/twitterinfo", async (req, res) => {
+    try {
+      const response = await axios.post(
+        "https://api.twitter.com/2/oauth2/token",
+        `client_id=${process.env.TWITTER_OAUTH2_CLIENT_ID}&grant_type=authorization_code&redirect_uri=${process.env.TWITTER_REDIRECT_URI}&code=${req.body.code}&code_verifier=challenge`,
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+      res.send(response.data);
+    } catch (err) {
+      res.status(404).send("Oh, something went wrong");
+    }
+  });
+
+  /* Get twitter data */
+  app.post("/twitterdata", async (req, res) => {
+    try {
+      const response = await axios.get("https://api.twitter.com/2/users/me", {
+        headers: {
+          Authorization: `Bearer ${req.body.access_token}`,
+        },
+        params: {
+          "user.fields":
+            "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld",
+        },
+      });
+      res.send({ userInfo: response.data.data });
+    } catch (err) {
+      try {
+        const response2 = await axios.post(
+          "https://api.twitter.com/2/oauth2/token",
+          `refresh_token=${req.body.refresh_token}&grant_type=refresh_token&client_id=${process.env.TWITTER_OAUTH2_CLIENT_ID}`,
+          {
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          }
+        );
+        const response3 = await axios.get(
+          "https://api.twitter.com/2/users/me",
+          {
+            headers: {
+              Authorization: `Bearer ${response2.data.access_token}`,
+            },
+            params: {
+              "user.fields":
+                "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld",
+            },
+          }
+        );
+        res.send({ tokenInfo: response2.data, userInfo: response3.data.data });
+      } catch (err) {
+        res.send({ error: "Authentication required" });
+      }
+    }
+  });
+}
+run().catch(console.dir);
