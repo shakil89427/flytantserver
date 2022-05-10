@@ -156,6 +156,19 @@ async function run() {
     }
   });
 
+  /* Get instagram user info */
+  app.post("/instadata", async (req, res) => {
+    try {
+      const response = await axios.get(
+        `https://www.instagram.com/${req.body.username}/channel/?_a=1`,
+        { headers: { "User-Agent": "Mozilla" } }
+      );
+      res.send(response.data);
+    } catch (err) {
+      res.status(404).send("oh, something went wrong");
+    }
+  });
+
   /* Get toutube channelId */
   app.post("/youtubeinfo", async (req, res) => {
     try {
