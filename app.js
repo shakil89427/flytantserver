@@ -96,6 +96,23 @@ async function run() {
     }
   });
 
+  /* Send contact mail */
+  app.post("/welcomemail", async (req, res) => {
+    try {
+      sgMail.setApiKey(process.env.SGAPIKEY);
+      let msg = {
+        from: process.env.SENDER_MAIL,
+        to: req.body.email,
+        subject: "Welcome to Flytant",
+        text: `You have registered successfully`,
+      };
+      const response = await sgMail.send(msg);
+      res.send(response);
+    } catch (err) {
+      res.status(500).send({ message: "Something went wrong" });
+    }
+  });
+
   /* Get instagram tokens and basic info */
   app.post("/instainfo", async (req, res) => {
     try {
