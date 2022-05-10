@@ -217,11 +217,11 @@ async function run() {
           }
         );
         res.send({
-          channelInfo: response1.data.items[0],
-          videosInfo: response3.data.items,
+          ...response1.data.items[0],
+          videos: response3.data.items,
         });
       } else {
-        res.send({ channelInfo: response1.data.items[0] });
+        res.send({ ...response1.data.items[0], videos: [] });
       }
     } catch (err) {
       res.status(404).send("Oh, something went wrong");
@@ -255,13 +255,28 @@ async function run() {
         },
         params: {
           "user.fields":
-            "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld",
+            "description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld",
         },
       });
-      res.send({ userInfo: response.data.data });
+      const response2 = await axios.get(
+        `https://api.twitter.com/2/users/${response.data.data.id}/tweets`,
+        {
+          headers: {
+            Authorization: `Bearer ${req.body.access_token}`,
+          },
+          params: {
+            expansions: "attachments.media_keys",
+            "media.fields": "media_key,type,url",
+            "tweet.fields": "attachments,created_at,public_metrics",
+          },
+        }
+      );
+      const tweets = response2?.data?.data;
+      const media = response2?.data?.includes?.media;
+      res.send({ userInfo: { ...response.data.data, tweets, media } });
     } catch (err) {
       try {
-        const response2 = await axios.post(
+        const response3 = await axios.post(
           "https://api.twitter.com/2/oauth2/token",
           `refresh_token=${req.body.refresh_token}&grant_type=refresh_token&client_id=${process.env.TWITTER_OAUTH2_CLIENT_ID}`,
           {
@@ -270,19 +285,37 @@ async function run() {
             },
           }
         );
-        const response3 = await axios.get(
+        const response4 = await axios.get(
           "https://api.twitter.com/2/users/me",
           {
             headers: {
-              Authorization: `Bearer ${response2.data.access_token}`,
+              Authorization: `Bearer ${response3.data.access_token}`,
             },
             params: {
               "user.fields":
-                "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld",
+                "description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld",
             },
           }
         );
-        res.send({ tokenInfo: response2.data, userInfo: response3.data.data });
+        const response5 = await axios.get(
+          `https://api.twitter.com/2/users/${response4.data.data.id}/tweets`,
+          {
+            headers: {
+              Authorization: `Bearer ${response3.data.access_token}`,
+            },
+            params: {
+              expansions: "attachments.media_keys",
+              "media.fields": "media_key,type,url",
+              "tweet.fields": "attachments,created_at,public_metrics",
+            },
+          }
+        );
+        const tweets = response5?.data?.data;
+        const media = response5?.data?.includes?.media;
+        res.send({
+          tokenInfo: response3.data,
+          userInfo: { ...response3.data.data, tweets, media },
+        });
       } catch (err) {
         res.send({ error: "Authentication required" });
       }
