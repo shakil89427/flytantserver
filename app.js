@@ -254,7 +254,10 @@ async function run() {
           },
         }
       );
-      res.send(response.data);
+      const db = getFirestore();
+      const userRef = doc(db, "users", req.body.userId);
+      await updateDoc(userRef, { ["linkedAccounts.Twitter"]: response.data });
+      res.send({ success: true });
     } catch (err) {
       res.status(404).send("Oh, something went wrong");
     }
