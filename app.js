@@ -145,7 +145,7 @@ async function run() {
       const db = getFirestore();
       const userRef = doc(db, "users", req.body.userId);
       await updateDoc(userRef, {
-        ["linkedAccounts.Linkedin"]: userInfo,
+        ["linkedAccounts.Instagram"]: userInfo,
       });
 
       res.send({ success: true });
