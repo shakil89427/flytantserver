@@ -334,5 +334,23 @@ async function run() {
       }
     }
   });
+
+  /* Get tiktok token */
+  app.post("/tiktokinfo", async (req, res) => {
+    try {
+      const response = await axios.post(
+        "https://open-api.tiktok.com/oauth/access_token",
+        `client_key=${process.env.TIKTOK_CLIENT_KEY}&grant_type=authorization_code&client_secret=${process.env.TIKTOK_CLIENT_SECRET}&code=${req.body.code}`,
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+      res.send(response.data.data);
+    } catch (err) {
+      res.status(404).send("Oh, something went wrong");
+    }
+  });
 }
 run().catch(console.dir);
