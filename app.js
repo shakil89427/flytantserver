@@ -4,7 +4,13 @@ const nodemailer = require("nodemailer");
 const cors = require("cors");
 const axios = require("axios");
 const { initializeApp } = require("firebase/app");
-const { doc, getFirestore, getDoc, updateDoc } = require("firebase/firestore");
+const {
+  doc,
+  getFirestore,
+  getDoc,
+  updateDoc,
+  deleteField,
+} = require("firebase/firestore");
 const app = express();
 const PORT = process.env.PORT || 5000;
 if (process?.env?.NODE_ENV !== "production") {
@@ -407,62 +413,66 @@ async function run() {
 
     // get user data
     const getData = async (open_id, access_token) => {
-      const response = await axios.post(
-        "https://open-api.tiktok.com/user/info/",
-        {
-          open_id,
-          access_token,
-          fields: [
-            "open_id",
-            "union_id",
-            "avatar_url",
-            "avatar_url_100",
-            "avatar_url_200",
-            "avatar_large_url",
-            "display_name",
-          ],
-        }
-      );
-      const response2 = await axios.post(
-        "https://open-api.tiktok.com/video/list",
-        {
-          open_id,
-          access_token,
-          fields: [
-            "embed_html",
-            "embed_link",
-            "like_count",
-            "comment_count",
-            "share_count",
-            "view_count",
-            "title",
-          ],
-        }
-      );
-      res.send({
-        ...response?.data?.data?.user,
-        videos: response2?.data?.data?.videos || [],
-      });
+      try {
+        const response = await axios.post(
+          "https://open-api.tiktok.com/user/info/",
+          {
+            open_id,
+            access_token,
+            fields: [
+              "open_id",
+              "union_id",
+              "avatar_url",
+              "avatar_url_100",
+              "avatar_url_200",
+              "avatar_large_url",
+              "display_name",
+            ],
+          }
+        );
+        const response2 = await axios.post(
+          "https://open-api.tiktok.com/video/list",
+          {
+            open_id,
+            access_token,
+            fields: [
+              "embed_html",
+              "embed_link",
+              "like_count",
+              "comment_count",
+              "share_count",
+              "view_count",
+              "title",
+            ],
+          }
+        );
+        res.send({
+          ...response?.data?.data?.user,
+          videos: response2?.data?.data?.videos || [],
+        });
+      } catch (err) {
+        res.status(404).send("Oh, something went wrong");
+      }
     };
 
     // get tokens
     const loadTokens = async (refresh_token) => {
       try {
         const response3 = await axios.post(
-          "https://open-api.tiktok.com/oauth/refresh_token/",
-          `refresh_token=${refresh_token}&client_key=${process.env.TIKTOK_CLIENT_KEY}&grant_type=authorization_code`,
+          "https://open-api.tiktok.com/oauth/refresh_token",
+          `refresh_token=${refresh_token}&client_key=${process.env.TIKTOK_CLIENT_KEY}&grant_type=refresh_token`,
           {
             headers: {
               "Content-Type": "application/x-www-form-urlencoded",
             },
           }
         );
-        console.log(response3);
-        const expires_in = Date.now() + response3.data.expires_in * 1000;
+        const expires_in = Date.now() + response3.data.data.expires_in * 1000;
         await updateDoc(userRef, {
           ["linkedAccounts.Tiktok"]: { ...response3.data.data, expires_in },
         });
-        // getData(response3.data.access_token);
+        const { open_id, access_token } = response3.data.data;
+        getData(open_id, access_token);
       } catch (err) {
         res.status(401).send("Authentication required");
       }
@@ -474,7 +484,7 @@ async function run() {
         const userData = await getDoc(userRef);
         const { expires_in, access_token, refresh_token, open_id } =
           userData.data().linkedAccounts.Tiktok;
-        if (Date.now() + 300000 <= expires_in) {
+        if (Date.now() + 300000 >= expires_in) {
           loadTokens(refresh_token);
         } else {
           getData(open_id, access_token);
