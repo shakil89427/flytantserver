@@ -388,7 +388,7 @@ async function run() {
           },
         }
       );
-      const expires_in = Date.now() + response.data.expires_in * 1000;
+      const expires_in = Date.now() + response.data.data.expires_in * 1000;
       const db = getFirestore();
       const userRef = doc(db, "users", req.body.userId);
       await updateDoc(userRef, {
@@ -439,17 +439,43 @@ async function run() {
           ],
         }
       );
-      res.send({ user: response.data, vid: response2.data });
+      res.send({
+        ...response?.data?.data?.user,
+        videos: response2?.data?.data?.videos || [],
+      });
     };
 
+    // get tokens
+    const loadTokens = async (refresh_token) => {
+      try {
+        const response3 = await axios.post(
+          "https://open-api.tiktok.com/oauth/refresh_token/",
+          `refresh_token=${refresh_token}&client_key=${process.env.TIKTOK_CLIENT_KEY}&grant_type=authorization_code`,
+          {
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          }
+        );
+        console.log(response3);
+        const expires_in = Date.now() + response3.data.expires_in * 1000;
+        await updateDoc(userRef, {
+          ["linkedAccounts.Tiktok"]: { ...response3.data.data, expires_in },
+        });
+        // getData(response3.data.access_token);
+      } catch (err) {
+        res.status(401).send("Authentication required");
+      }
+    };
+
+    // get user info
     const getUser = async () => {
       try {
         const userData = await getDoc(userRef);
         const { expires_in, access_token, refresh_token, open_id } =
           userData.data().linkedAccounts.Tiktok;
-        if (Date.now() + 300000 >= expires_in) {
-          // loadTokens(refresh_token);
-          console.log("hi");
+        if (Date.now() + 300000 <= expires_in) {
+          loadTokens(refresh_token);
         } else {
           getData(open_id, access_token);
         }
