@@ -2,12 +2,21 @@ const express = require("express");
 const sgMail = require("@sendgrid/mail");
 const cors = require("cors");
 const axios = require("axios");
-const { response } = require("express");
+const { initializeApp } = require("firebase/app");
+const { doc, getFirestore, updateDoc } = require("firebase/firestore");
 const app = express();
 const PORT = process.env.PORT || 5000;
 if (process?.env?.NODE_ENV !== "production") {
   require("dotenv").config();
 }
+initializeApp({
+  apiKey: process.env.FIREBASE_APIKEY,
+  authDomain: process.env.FIREBASE_AUTHDOMAIN,
+  projectId: process.env.FIREBASE_PROJECTID,
+  storageBucket: process.env.FIREBASE_STORAGEBUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGINGSENDERID,
+  appId: process.env.FIREBASE_APPID,
+});
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
@@ -122,35 +131,24 @@ async function run() {
         { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
       );
 
-      const response2 = await axios.get(
-        "https://graph.instagram.com/access_token",
-        {
-          params: {
-            grant_type: "ig_exchange_token",
-            client_secret: process.env.INSTAGRAM_CLIENT_SECRET,
-            access_token: response1.data.access_token,
-          },
-        }
-      );
-
-      const tokenInfo = {
-        access_token: response2.data.access_token,
-        tokenExpires: Date.now() + response2.data.expires_in * 1000,
-      };
-
-      const response3 = await axios.get("https://graph.instagram.com/me", {
+      const response2 = await axios.get("https://graph.instagram.com/me", {
         params: {
           fields: "id,username",
-          access_token: tokenInfo.access_token,
+          access_token: response1.data.access_token,
         },
       });
-
       const userInfo = {
-        username: response3.data.username,
-        instaId: response3.data.id,
-        ...tokenInfo,
+        username: response2.data.username,
+        instaId: response2.data.id,
       };
-      res.send(userInfo);
+
+      const db = getFirestore();
+      const userRef = doc(db, "users", req.body.userId);
+      await updateDoc(userRef, {
+        ["linkedAccounts.Linkedin"]: userInfo,
+      });
+
+      res.send({ success: true });
     } catch (err) {
       res.status(404).send("Oh uh, something went wrong");
     }
@@ -351,6 +349,27 @@ async function run() {
     } catch (err) {
       res.status(404).send("Oh, something went wrong");
     }
+  });
+
+  /* Get tiktok data */
+  app.post("/tiktokdata", async (req, res) => {
+    const response = await axios.post(
+      "https://open-api.tiktok.com/user/info/",
+      {
+        open_id: req.body.open_id,
+        access_token: req.body.access_token,
+        fields: [
+          "open_id",
+          "union_id",
+          "avatar_url",
+          "avatar_url_100",
+          "avatar_url_200",
+          "avatar_large_url",
+          "display_name",
+        ],
+      }
+    );
+    res.send(response.data.data.user);
   });
 }
 run().catch(console.dir);
