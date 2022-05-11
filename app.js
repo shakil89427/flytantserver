@@ -388,10 +388,11 @@ async function run() {
           },
         }
       );
+      const expires_in = Date.now() + response.data.expires_in * 1000;
       const db = getFirestore();
       const userRef = doc(db, "users", req.body.userId);
       await updateDoc(userRef, {
-        ["linkedAccounts.Tiktok"]: response.data.data,
+        ["linkedAccounts.Tiktok"]: { ...response.data.data, expires_in },
       });
       res.send({ success: true });
     } catch (err) {
@@ -401,23 +402,62 @@ async function run() {
 
   /* Get tiktok data */
   app.post("/tiktokdata", async (req, res) => {
-    const response = await axios.post(
-      "https://open-api.tiktok.com/user/info/",
-      {
-        open_id: req.body.open_id,
-        access_token: req.body.access_token,
-        fields: [
-          "open_id",
-          "union_id",
-          "avatar_url",
-          "avatar_url_100",
-          "avatar_url_200",
-          "avatar_large_url",
-          "display_name",
-        ],
+    const db = getFirestore();
+    const userRef = doc(db, "users", req?.body?.userId);
+
+    // get user data
+    const getData = async (open_id, access_token) => {
+      const response = await axios.post(
+        "https://open-api.tiktok.com/user/info/",
+        {
+          open_id,
+          access_token,
+          fields: [
+            "open_id",
+            "union_id",
+            "avatar_url",
+            "avatar_url_100",
+            "avatar_url_200",
+            "avatar_large_url",
+            "display_name",
+          ],
+        }
+      );
+      const response2 = await axios.post(
+        "https://open-api.tiktok.com/video/list",
+        {
+          open_id,
+          access_token,
+          fields: [
+            "embed_html",
+            "embed_link",
+            "like_count",
+            "comment_count",
+            "share_count",
+            "view_count",
+            "title",
+          ],
+        }
+      );
+      res.send({ user: response.data, vid: response2.data });
+    };
+
+    const getUser = async () => {
+      try {
+        const userData = await getDoc(userRef);
+        const { expires_in, access_token, refresh_token, open_id } =
+          userData.data().linkedAccounts.Tiktok;
+        if (Date.now() + 300000 >= expires_in) {
+          // loadTokens(refresh_token);
+          console.log("hi");
+        } else {
+          getData(open_id, access_token);
+        }
+      } catch (err) {
+        res.status(404).send("Oh, something went wrong");
       }
-    );
-    res.send(response.data.data.user);
+    };
+    getUser();
   });
 }
 run().catch(console.dir);
