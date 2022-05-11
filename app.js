@@ -182,7 +182,7 @@ async function run() {
       const db = getFirestore();
       const userRef = doc(db, "users", req.body.userId);
       await updateDoc(userRef, {
-        ["linkedAccount.Youtube"]: { channelId: response.data.items[0].id },
+        ["linkedAccounts.Youtube"]: { channelId: response.data.items[0].id },
       });
       res.send({ success: true });
     } catch (err) {
