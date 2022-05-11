@@ -1,5 +1,6 @@
 const express = require("express");
 const sgMail = require("@sendgrid/mail");
+const nodemailer = require("nodemailer");
 const cors = require("cors");
 const axios = require("axios");
 const { initializeApp } = require("firebase/app");
@@ -36,21 +37,31 @@ async function run() {
   app.post("/sendmailCareer", async (req, res) => {
     try {
       const { ask, name, email, text, url } = await req.body;
-      sgMail.setApiKey(process.env.SGAPIKEY);
-      var mailOptions = {
-        from: process.env.SENDER_MAIL,
+      let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL,
+          pass: process.env.PASS,
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
+
+      let mailOption = {
+        from: process.env.EMAIL,
         to: process.env.CAREER_MAIL,
         subject: `Career: ${name}`,
         text: `${ask}\nEmail: ${email}\nMessage: ${text} \nResume: ${url}`,
       };
-      sgMail
-        .send(mailOptions)
-        .then(() => {
-          return res.send({ success: true });
-        })
-        .catch(() => {
-          return res.send({ success: false });
-        });
+
+      transporter.sendMail(mailOption, (err, success) => {
+        if (err) {
+          res.send({ success: false });
+        } else {
+          res.send({ success: true });
+        }
+      });
     } catch (err) {
       res.send({ success: false });
     }
@@ -59,23 +70,33 @@ async function run() {
   /* Send Brand contact mail */
   app.post("/sendmailBrandsContact", async (req, res) => {
     try {
-      const { name, brandname, email, message, contact, code } = await req.body;
-      console.log(req.body);
-      sgMail.setApiKey(process.env.SGAPIKEY);
-      var mailOptions = {
-        from: process.env.SENDER_MAIL,
+      const { name, brandname, email, message, contact } = await req.body;
+
+      let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL,
+          pass: process.env.PASS,
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
+
+      let mailOption = {
+        from: process.env.EMAIL,
         to: process.env.BRANDCONTACT_MAIL,
         subject: `Brands: ${name}`,
-        text: `Name: ${name}\nEmail: ${email}\nContact: +${code} ${contact}\nBrand Name: ${brandname}\nMessage: ${message}`,
+        text: `Name: ${name}\nEmail: ${email}\nContact: ${contact}\nBrand Name: ${brandname}\nMessage: ${message}`,
       };
-      sgMail
-        .send(mailOptions)
-        .then(() => {
-          return res.send({ success: true });
-        })
-        .catch(() => {
-          return res.send({ success: false });
-        });
+
+      transporter.sendMail(mailOption, (err, success) => {
+        if (err) {
+          res.send({ success: false });
+        } else {
+          res.send({ success: true });
+        }
+      });
     } catch (err) {
       res.send({ success: false });
     }
@@ -85,22 +106,34 @@ async function run() {
   app.post("/sendmailContact", async (req, res) => {
     try {
       const { ask, name, email, text } = await req.body;
-      sgMail.setApiKey(process.env.SGAPIKEY);
-      var mailOptions = {
-        from: process.env.SENDER_MAIL,
+
+      let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL,
+          pass: process.env.PASS,
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
+
+      let mailOption = {
+        from: process.env.EMAIL,
         to: process.env.CONTACT_MAIL,
         subject: `Contact: ${name}`,
         text: `Question: ${ask}\nEmail: ${email}\nMessage: ${text}`,
       };
-      sgMail
-        .send(mailOptions)
-        .then(() => {
-          return res.send({ success: true });
-        })
-        .catch(() => {
-          return res.send({ success: false });
-        });
+
+      transporter.sendMail(mailOption, (err, success) => {
+        if (err) {
+          res.send({ success: false });
+        } else {
+          res.send({ success: true });
+        }
+      });
     } catch (err) {
+      console.log(err);
       res.send({ success: false });
     }
   });
