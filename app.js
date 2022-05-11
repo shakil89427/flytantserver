@@ -158,8 +158,7 @@ async function run() {
   app.post("/instadata", async (req, res) => {
     try {
       const response = await axios.get(
-        `https://www.instagram.com/${req.body.username}/channel/?_a=1`,
-        { headers: { "User-Agent": "Mozilla" } }
+        `https://www.instagram.com/${req.body.username}/channel/?_a=1`
       );
       res.send(response.data);
     } catch (err) {
@@ -170,18 +169,22 @@ async function run() {
   /* Get toutube channelId */
   app.post("/youtubeinfo", async (req, res) => {
     try {
-      const { token } = req.body;
       const response = await axios.get(
         "https://www.googleapis.com/youtube/v3/channels",
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${req.body.token}` },
           params: {
             part: "id",
             mine: true,
           },
         }
       );
-      res.send({ channelId: response.data.items[0].id });
+      const db = getFirestore();
+      const userRef = doc(db, "users", req.body.userId);
+      await updateDoc(userRef, {
+        ["linkedAccount.Youtube"]: { channelId: response.data.items[0].id },
+      });
+      res.send({ success: true });
     } catch (err) {
       res.status(404).send("Oh uh, something went wrong");
     }
