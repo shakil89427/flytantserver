@@ -364,7 +364,7 @@ async function run() {
         const userData = await getDoc(userRef);
         const { expires_in, access_token, refresh_token } =
           userData.data().linkedAccounts.Twitter;
-        if (Date.now() + 60000 >= expires_in) {
+        if (Date.now() + 300000 >= expires_in) {
           loadTokens(refresh_token);
         } else {
           getData(access_token);
@@ -388,7 +388,12 @@ async function run() {
           },
         }
       );
-      res.send(response.data.data);
+      const db = getFirestore();
+      const userRef = doc(db, "users", req.body.userId);
+      await updateDoc(userRef, {
+        ["linkedAccounts.Tiktok"]: response.data.data,
+      });
+      res.send({ success: true });
     } catch (err) {
       res.status(404).send("Oh, something went wrong");
     }
