@@ -4,7 +4,7 @@ const nodemailer = require("nodemailer");
 const cors = require("cors");
 const axios = require("axios");
 const { initializeApp } = require("firebase/app");
-const { doc, getFirestore, updateDoc } = require("firebase/firestore");
+const { doc, getFirestore, getDoc, updateDoc } = require("firebase/firestore");
 const app = express();
 const PORT = process.env.PORT || 5000;
 if (process?.env?.NODE_ENV !== "production") {
@@ -287,9 +287,12 @@ async function run() {
           },
         }
       );
+      const expires_in = Date.now() + response.data.expires_in * 1000;
       const db = getFirestore();
       const userRef = doc(db, "users", req.body.userId);
-      await updateDoc(userRef, { ["linkedAccounts.Twitter"]: response.data });
+      await updateDoc(userRef, {
+        ["linkedAccounts.Twitter"]: { ...response.data, expires_in },
+      });
       res.send({ success: true });
     } catch (err) {
       res.status(404).send("Oh, something went wrong");
@@ -298,60 +301,25 @@ async function run() {
 
   /* Get twitter data */
   app.post("/twitterdata", async (req, res) => {
-    try {
-      const response = await axios.get("https://api.twitter.com/2/users/me", {
-        headers: {
-          Authorization: `Bearer ${req.body.access_token}`,
-        },
-        params: {
-          "user.fields":
-            "description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld",
-        },
-      });
-      const response2 = await axios.get(
-        `https://api.twitter.com/2/users/${response.data.data.id}/tweets`,
-        {
+    const db = getFirestore();
+    const userRef = doc(db, "users", req?.body?.userId);
+    // load user twitter data
+    const getData = async (access_token) => {
+      try {
+        const response = await axios.get("https://api.twitter.com/2/users/me", {
           headers: {
-            Authorization: `Bearer ${req.body.access_token}`,
+            Authorization: `Bearer ${access_token}`,
           },
           params: {
-            expansions: "attachments.media_keys",
-            "media.fields": "media_key,type,url",
-            "tweet.fields": "attachments,created_at,public_metrics",
+            "user.fields":
+              "description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld",
           },
-        }
-      );
-      const tweets = response2?.data?.data;
-      const media = response2?.data?.includes?.media;
-      res.send({ userInfo: { ...response.data.data, tweets, media } });
-    } catch (err) {
-      try {
-        const response3 = await axios.post(
-          "https://api.twitter.com/2/oauth2/token",
-          `refresh_token=${req.body.refresh_token}&grant_type=refresh_token&client_id=${process.env.TWITTER_OAUTH2_CLIENT_ID}`,
+        });
+        const response2 = await axios.get(
+          `https://api.twitter.com/2/users/${response.data.data.id}/tweets`,
           {
             headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-          }
-        );
-        const response4 = await axios.get(
-          "https://api.twitter.com/2/users/me",
-          {
-            headers: {
-              Authorization: `Bearer ${response3.data.access_token}`,
-            },
-            params: {
-              "user.fields":
-                "description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld",
-            },
-          }
-        );
-        const response5 = await axios.get(
-          `https://api.twitter.com/2/users/${response4.data.data.id}/tweets`,
-          {
-            headers: {
-              Authorization: `Bearer ${response3.data.access_token}`,
+              Authorization: `Bearer ${access_token}`,
             },
             params: {
               expansions: "attachments.media_keys",
@@ -360,16 +328,52 @@ async function run() {
             },
           }
         );
-        const tweets = response5?.data?.data;
-        const media = response5?.data?.includes?.media;
-        res.send({
-          tokenInfo: response3.data,
-          userInfo: { ...response3.data.data, tweets, media },
-        });
+        const tweets = response2?.data?.data;
+        const media = response2?.data?.includes?.media;
+        res.send({ ...response.data.data, tweets, media });
       } catch (err) {
-        res.send({ error: "Authentication required" });
+        res.status(404).send("Oh, something went wrong");
       }
-    }
+    };
+
+    // get user token
+    const loadTokens = async (refresh_token) => {
+      try {
+        const response3 = await axios.post(
+          "https://api.twitter.com/2/oauth2/token",
+          `refresh_token=${refresh_token}&grant_type=refresh_token&client_id=${process.env.TWITTER_OAUTH2_CLIENT_ID}`,
+          {
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          }
+        );
+        const expires_in = Date.now() + response3.data.expires_in * 1000;
+        await updateDoc(userRef, {
+          ["linkedAccounts.Twitter"]: { ...response3.data, expires_in },
+        });
+        getData(response3.data.access_token);
+      } catch (err) {
+        res.status(401).send("Authentication required");
+      }
+    };
+
+    // Get user initial info
+    const getUser = async () => {
+      try {
+        const userData = await getDoc(userRef);
+        const { expires_in, access_token, refresh_token } =
+          userData.data().linkedAccounts.Twitter;
+        if (Date.now() + 60000 >= expires_in) {
+          loadTokens(refresh_token);
+        } else {
+          getData(access_token);
+        }
+      } catch (err) {
+        res.status(404).send("Oh, something went wrong");
+      }
+    };
+    getUser();
   });
 
   /* Get tiktok token */
