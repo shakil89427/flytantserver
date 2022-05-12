@@ -436,13 +436,14 @@ async function run() {
             open_id,
             access_token,
             fields: [
-              "embed_html",
-              "embed_link",
               "like_count",
               "comment_count",
               "share_count",
               "view_count",
               "title",
+              "cover_image_url",
+              "video_description",
+              "id",
             ],
           }
         );
