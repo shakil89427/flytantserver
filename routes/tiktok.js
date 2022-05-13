@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const { doc, getFirestore, getDoc, updateDoc } = require("firebase/firestore");
-const db = getFirestore();
+const firestore = require("../firebase/firestore");
 
 router.post("/tiktokinfo", async (req, res) => {
   try {
@@ -16,10 +15,13 @@ router.post("/tiktokinfo", async (req, res) => {
       }
     );
     const expires_in = Date.now() + response.data.data.expires_in * 1000;
-    const userRef = doc(db, "users", req.body.userId);
-    await updateDoc(userRef, {
-      ["linkedAccounts.Tiktok"]: { ...response.data.data, expires_in },
-    });
+    await firestore
+      .collection("users")
+      .doc(req.body.userId)
+      .update({
+        ["linkedAccounts.Tiktok"]: { ...response.data.data, expires_in },
+      });
+
     res.send({ success: true });
   } catch (err) {
     res.status(404).send("Oh, something went wrong");
@@ -28,8 +30,6 @@ router.post("/tiktokinfo", async (req, res) => {
 
 /* Get tiktok data */
 router.post("/tiktokdata", async (req, res) => {
-  const userRef = doc(db, "users", req?.body?.userId);
-
   // get user data
   const getData = async (open_id, access_token) => {
     try {
@@ -87,10 +87,12 @@ router.post("/tiktokdata", async (req, res) => {
           },
         }
       );
-      const expires_in = Date.now() + response3.data.data.expires_in * 1000;
-      await updateDoc(userRef, {
-        ["linkedAccounts.Tiktok"]: { ...response3.data.data, expires_in },
-      });
+      await firestore
+        .collection("users")
+        .doc(req.body.userId)
+        .update({
+          ["linkedAccounts.Tiktok"]: { ...response3.data.data, expires_in },
+        });
       const { open_id, access_token } = response3.data.data;
       getData(open_id, access_token);
     } catch (err) {
@@ -101,7 +103,10 @@ router.post("/tiktokdata", async (req, res) => {
   // get user info
   const getUser = async () => {
     try {
-      const userData = await getDoc(userRef);
+      const userData = await firestore
+        .collection("users")
+        .doc(req.body.userId)
+        .get();
       const { expires_in, access_token, refresh_token, open_id } =
         userData.data().linkedAccounts.Tiktok;
       if (Date.now() + 300000 >= expires_in) {

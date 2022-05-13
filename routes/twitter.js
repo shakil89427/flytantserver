@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const { doc, getFirestore, getDoc, updateDoc } = require("firebase/firestore");
-const db = getFirestore();
+const firestore = require("../firebase/firestore");
 
 router.post("/twitterinfo", async (req, res) => {
   try {
@@ -16,10 +15,13 @@ router.post("/twitterinfo", async (req, res) => {
       }
     );
     const expires_in = Date.now() + response.data.expires_in * 1000;
-    const userRef = doc(db, "users", req.body.userId);
-    await updateDoc(userRef, {
-      ["linkedAccounts.Twitter"]: { ...response.data, expires_in },
-    });
+    await firestore
+      .collection("users")
+      .doc(req.body.userId)
+      .update({
+        ["linkedAccounts.Twitter"]: { ...response.data, expires_in },
+      });
+
     res.send({ success: true });
   } catch (err) {
     res.status(404).send("Oh, something went wrong");
@@ -27,7 +29,6 @@ router.post("/twitterinfo", async (req, res) => {
 });
 
 router.post("/twitterdata", async (req, res) => {
-  const userRef = doc(db, "users", req?.body?.userId);
   // load user twitter data
   const getData = async (access_token) => {
     try {
@@ -74,9 +75,12 @@ router.post("/twitterdata", async (req, res) => {
         }
       );
       const expires_in = Date.now() + response3.data.expires_in * 1000;
-      await updateDoc(userRef, {
-        ["linkedAccounts.Twitter"]: { ...response3.data, expires_in },
-      });
+      await firestore
+        .collection("users")
+        .doc(req.body.userId)
+        .update({
+          ["linkedAccounts.Twitter"]: { ...response3.data, expires_in },
+        });
       getData(response3.data.access_token);
     } catch (err) {
       res.status(401).send("Authentication required");
@@ -86,7 +90,10 @@ router.post("/twitterdata", async (req, res) => {
   // Get user initial info
   const getUser = async () => {
     try {
-      const userData = await getDoc(userRef);
+      const userData = await firestore
+        .collection("users")
+        .doc(req.body.userId)
+        .get();
       const { expires_in, access_token, refresh_token } =
         userData.data().linkedAccounts.Twitter;
       if (Date.now() + 300000 >= expires_in) {

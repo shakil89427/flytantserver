@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const { doc, getFirestore, updateDoc } = require("firebase/firestore");
-const db = getFirestore();
+const firestore = require("../firebase/firestore");
 
 router.post("/instainfo", async (req, res) => {
   try {
@@ -22,10 +21,12 @@ router.post("/instainfo", async (req, res) => {
       username: response2.data.username,
       instaId: response2.data.id,
     };
-    const userRef = doc(db, "users", req.body.userId);
-    await updateDoc(userRef, {
-      ["linkedAccounts.Instagram"]: userInfo,
-    });
+    await firestore
+      .collection("users")
+      .doc(req.body.userId)
+      .update({
+        ["linkedAccounts.Instagram"]: userInfo,
+      });
 
     res.send({ success: true });
   } catch (err) {

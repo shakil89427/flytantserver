@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const { doc, getFirestore, updateDoc } = require("firebase/firestore");
-const db = getFirestore();
+const firestore = require("../firebase/firestore");
 
 router.post("/youtubeinfo", async (req, res) => {
   try {
@@ -16,10 +15,12 @@ router.post("/youtubeinfo", async (req, res) => {
         },
       }
     );
-    const userRef = doc(db, "users", req.body.userId);
-    await updateDoc(userRef, {
-      ["linkedAccounts.Youtube"]: { channelId: response.data.items[0].id },
-    });
+    await firestore
+      .collection("users")
+      .doc(req.body.userId)
+      .update({
+        ["linkedAccounts.Youtube"]: { channelId: response.data.items[0].id },
+      });
     res.send({ success: true });
   } catch (err) {
     res.status(404).send("Oh uh, something went wrong");
