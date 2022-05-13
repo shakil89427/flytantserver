@@ -16,7 +16,7 @@ const serviceAccount = {
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://flytanthome-default-rtdb.firebaseio.com",
+  databaseURL: process.env.FIREBASE_DATABASEURL,
 });
 
 const firestore = admin.firestore();
