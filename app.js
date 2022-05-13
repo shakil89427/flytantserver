@@ -14,7 +14,11 @@ const sendEmail = require("./routes/sendEmail");
 /* Middlewares */
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://flytanthome.web.app",
+  })
+);
 
 /* Port listener */
 app.listen(PORT, () => {
