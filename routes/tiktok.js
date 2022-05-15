@@ -87,6 +87,7 @@ router.post("/tiktokdata", async (req, res) => {
           },
         }
       );
+      const expires_in = Date.now() + response3.data.data.expires_in * 1000;
       await firestore
         .collection("users")
         .doc(req.body.userId)
@@ -96,6 +97,7 @@ router.post("/tiktokdata", async (req, res) => {
       const { open_id, access_token } = response3.data.data;
       getData(open_id, access_token);
     } catch (err) {
+      console.log(err);
       res.status(401).send("Authentication required");
     }
   };
