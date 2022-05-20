@@ -10,6 +10,7 @@ const youtube = require("./routes/youtube");
 const twitter = require("./routes/twitter");
 const tiktok = require("./routes/tiktok");
 const sendEmail = require("./routes/sendEmail");
+const basic = require("./routes/basic");
 
 /* Middlewares */
 app.use(express.urlencoded({ extended: true }));
@@ -32,3 +33,4 @@ app.use(youtube);
 app.use(twitter);
 app.use(tiktok);
 app.use(sendEmail);
+app.use(basic);
