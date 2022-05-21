@@ -37,7 +37,7 @@ router.post("/instainfo", async (req, res) => {
 router.post("/instadata", async (req, res) => {
   try {
     const response = await axios.get(
-      `https://www.instagram.com/${req.body.username}/channel/?__a=1`
+      `https://www.instagram.com/${req.body.username}`
     );
     const temp = response.data
       .split("window._sharedData = ")[1]
