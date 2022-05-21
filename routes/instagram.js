@@ -39,7 +39,11 @@ router.post("/instadata", async (req, res) => {
     const response = await axios.get(
       `https://www.instagram.com/${req.body.username}/channel/?__a=1`
     );
-    res.send(response.data);
+    const temp = response.data
+      .split("window._sharedData = ")[1]
+      .split(";</script>")[0];
+    const valid = JSON.parse(temp).entry_data;
+    res.send(valid);
   } catch (err) {
     res.status(404).send("oh, something went wrong");
   }
