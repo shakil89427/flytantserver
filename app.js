@@ -11,6 +11,7 @@ const twitter = require("./routes/twitter");
 const tiktok = require("./routes/tiktok");
 const sendEmail = require("./routes/sendEmail");
 const basic = require("./routes/basic");
+const razorpay = require("./routes/razorPay");
 
 /* Middlewares */
 app.use(express.urlencoded({ extended: true }));
@@ -34,3 +35,4 @@ app.use(twitter);
 app.use(tiktok);
 app.use(sendEmail);
 app.use(basic);
+app.use(razorpay);
