@@ -18,11 +18,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
-/* Port listener */
-app.listen(PORT, () => {
-  console.log(`Listening to Port ${PORT}`);
-});
-
 /* Basic route for test */
 app.get("/", (req, res) => {
   res.send("Server Running");
@@ -36,3 +31,8 @@ app.use(tiktok);
 app.use(sendEmail);
 app.use(basic);
 app.use(razorpay);
+
+/* Port listener */
+app.listen(PORT, () => {
+  console.log(`Listening to Port ${PORT}`);
+});
