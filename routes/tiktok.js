@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const firestore = require("../firebase/firestore");
+const moment = require("moment");
 
 router.post("/tiktokinfo", async (req, res) => {
   try {
@@ -14,7 +15,7 @@ router.post("/tiktokinfo", async (req, res) => {
         },
       }
     );
-    const expires_in = Date.now() + response.data.data.expires_in * 1000;
+    const expires_in = moment().unix() + response.data.data.expires_in;
     await firestore
       .collection("users")
       .doc(req.body.userId)
@@ -87,7 +88,7 @@ router.post("/tiktokdata", async (req, res) => {
           },
         }
       );
-      const expires_in = Date.now() + response3.data.data.expires_in * 1000;
+      const expires_in = moment().unix() + response3.data.data.expires_in;
       await firestore
         .collection("users")
         .doc(req.body.userId)
@@ -111,7 +112,7 @@ router.post("/tiktokdata", async (req, res) => {
         .get();
       const { expires_in, access_token, refresh_token, open_id } =
         userData.data().linkedAccounts.Tiktok;
-      if (Date.now() + 300000 >= expires_in) {
+      if (moment().unix() + 120 >= expires_in) {
         loadTokens(refresh_token);
       } else {
         getData(open_id, access_token);

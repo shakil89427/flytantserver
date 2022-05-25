@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const firestore = require("../firebase/firestore");
+const moment = require("moment");
 
 router.post("/twitterinfo", async (req, res) => {
   try {
@@ -14,7 +15,7 @@ router.post("/twitterinfo", async (req, res) => {
         },
       }
     );
-    const expires_in = Date.now() + response.data.expires_in * 1000;
+    const expires_in = moment().unix() + response.data.expires_in;
     await firestore
       .collection("users")
       .doc(req.body.userId)
@@ -74,7 +75,7 @@ router.post("/twitterdata", async (req, res) => {
           },
         }
       );
-      const expires_in = Date.now() + response3.data.expires_in * 1000;
+      const expires_in = moment().unix() + response3.data.expires_in;
       await firestore
         .collection("users")
         .doc(req.body.userId)
@@ -96,7 +97,7 @@ router.post("/twitterdata", async (req, res) => {
         .get();
       const { expires_in, access_token, refresh_token } =
         userData.data().linkedAccounts.Twitter;
-      if (Date.now() + 300000 >= expires_in) {
+      if (moment().unix() + 120 >= expires_in) {
         loadTokens(refresh_token);
       } else {
         getData(access_token);
