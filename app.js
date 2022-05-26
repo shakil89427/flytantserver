@@ -16,7 +16,15 @@ const razorpay = require("./routes/razorPay");
 /* Middlewares */
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "https://flytant-cb72e.firebaseapp.com",
+      "https://flytant.com",
+      "http://localhost:3000",
+    ],
+  })
+);
 
 /* Basic route for test */
 app.get("/", (req, res) => {
