@@ -18,7 +18,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(
   cors({
-    origin: ["https://flytant-cb72e.firebaseapp.com", "https://flytant.com"],
+    origin: [
+      "https://flytant-cb72e.firebaseapp.com",
+      "https://flytant.com",
+      "http://localhost:3000",
+    ],
   })
 );
 
