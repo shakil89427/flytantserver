@@ -45,7 +45,7 @@ router.post("/instadata", async (req, res) => {
     const valid = JSON.parse(temp).entry_data;
     res.send(valid);
   } catch (err) {
-    res.status(404).send("oh, something went wrong");
+    res.status(200).send("Temporary 200 for keep good flow on frontend");
   }
 });
 
