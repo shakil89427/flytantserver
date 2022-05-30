@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const firestore = require("../firebase/firestore");
+const puppeteer = require("puppeteer");
 
 router.post("/instainfo", async (req, res) => {
   try {
@@ -35,17 +36,62 @@ router.post("/instainfo", async (req, res) => {
 });
 
 router.post("/instadata", async (req, res) => {
+  /* Get data */
+  const getData = async (page, browser) => {
+    try {
+      await page.goto(`https://www.instagram.com/${req.body.username}`, {
+        waitUntil: "networkidle0",
+      });
+      const data = await page.evaluate(
+        () => document.querySelector("*").outerHTML
+      );
+      await browser.close();
+      const temp = data
+        .split("window._sharedData = ")[1]
+        .split(";</script>")[0];
+      const valid = JSON.parse(temp).entry_data;
+      res.send(valid);
+    } catch (err) {
+      res.status(200).send("Use stored data");
+    }
+  };
+
+  /* Login on instagram */
+  const login = async (page) => {
+    try {
+      await page.goto("https://www.instagram.com/accounts/login/", {
+        waitUntil: "networkidle0",
+      });
+      await page.type("input[name=username]", process.env.INSTAGRAM_USERNAME);
+      await page.type("input[name=password]", process.env.INSTAGRAM_PASSWORD);
+      await page.click('button[type="submit"]');
+      await page.waitForTimeout(4000);
+      const pathname = await page.evaluate(() => location?.pathname);
+      if (pathname.includes("login")) {
+        return false;
+      } else {
+        return true;
+      }
+    } catch (err) {
+      return false;
+    }
+  };
+
+  /* Start Browser and process login */
   try {
-    const response = await axios.get(
-      `https://www.instagram.com/${req.body.username}/?__a=1`
-    );
-    const temp = response.data
-      .split("window._sharedData = ")[1]
-      .split(";</script>")[0];
-    const valid = JSON.parse(temp).entry_data;
-    res.send(valid);
+    const browser = await puppeteer.launch({ headless: false });
+    const [page] = await browser.pages();
+    const firstAttempt = await login(page);
+    if (firstAttempt) {
+      return getData(page, browser);
+    }
+    const secondAttempt = await login(page);
+    if (secondAttempt) {
+      return getData(page, browser);
+    }
+    res.status(200).send("Use stored data");
   } catch (err) {
-    res.status(200).send("Temporary 200 for keep good flow on frontend");
+    res.status(200).send("Use stored data");
   }
 });
 
