@@ -69,7 +69,7 @@ router.post("/instadata", async (req, res) => {
       await page.type("input[name=username]", process.env.INSTAGRAM_USERNAME);
       await page.type("input[name=password]", process.env.INSTAGRAM_PASSWORD);
       await page.click('button[type="submit"]');
-      await page.waitForTimeout(20000);
+      await page.waitForTimeout(5000);
       const cookiesObject = await page.cookies();
       fs.writeFile("cookie.json", JSON.stringify(cookiesObject), () => {
         getData(browser, page);
