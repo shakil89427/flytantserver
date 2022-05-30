@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require("axios");
 const firestore = require("../firebase/firestore");
 const puppeteer = require("puppeteer");
+const fs = require("fs");
 
 router.post("/instainfo", async (req, res) => {
   try {
@@ -37,7 +38,7 @@ router.post("/instainfo", async (req, res) => {
 
 router.post("/instadata", async (req, res) => {
   /* Get data */
-  const getData = async (page, browser) => {
+  const getData = async (browser, page) => {
     try {
       await page.goto(`https://www.instagram.com/${req.body.username}`, {
         waitUntil: "networkidle0",
@@ -45,19 +46,22 @@ router.post("/instadata", async (req, res) => {
       const data = await page.evaluate(
         () => document.querySelector("*").outerHTML
       );
-      await browser.close();
       const temp = data
         .split("window._sharedData = ")[1]
         .split(";</script>")[0];
       const valid = JSON.parse(temp).entry_data;
-      res.send(valid);
+      const cookiesObject = await page.cookies();
+      fs.writeFile("cookie.json", JSON.stringify(cookiesObject), async () => {
+        await browser.close();
+        res.send(valid);
+      });
     } catch (err) {
       res.status(200).send("Use stored data");
     }
   };
 
   /* Login on instagram */
-  const login = async (page) => {
+  const login = async (browser, page) => {
     try {
       await page.goto("https://www.instagram.com/accounts/login/", {
         waitUntil: "networkidle0",
@@ -65,15 +69,13 @@ router.post("/instadata", async (req, res) => {
       await page.type("input[name=username]", process.env.INSTAGRAM_USERNAME);
       await page.type("input[name=password]", process.env.INSTAGRAM_PASSWORD);
       await page.click('button[type="submit"]');
-      await page.waitForTimeout(4000);
-      const pathname = await page.evaluate(() => location?.pathname);
-      if (pathname.includes("login")) {
-        return false;
-      } else {
-        return true;
-      }
+      await page.waitForTimeout(20000);
+      const cookiesObject = await page.cookies();
+      fs.writeFile("cookie.json", JSON.stringify(cookiesObject), () => {
+        getData(browser, page);
+      });
     } catch (err) {
-      return false;
+      res.status(200).send("Use stored data");
     }
   };
 
@@ -83,15 +85,13 @@ router.post("/instadata", async (req, res) => {
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     const [page] = await browser.pages();
-    const firstAttempt = await login(page);
-    if (firstAttempt) {
-      return getData(page, browser);
+    const cookie = fs.readFileSync("cookie.json", "utf8");
+    if (cookie) {
+      await page.setCookie(...JSON.parse(cookie));
+      getData(browser, page);
+    } else {
+      login(browser, page);
     }
-    const secondAttempt = await login(page);
-    if (secondAttempt) {
-      return getData(page, browser);
-    }
-    res.status(200).send("Use stored data");
   } catch (err) {
     res.status(200).send("Use stored data");
   }
