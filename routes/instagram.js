@@ -79,7 +79,9 @@ router.post("/instadata", async (req, res) => {
 
   /* Start Browser and process login */
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
     const [page] = await browser.pages();
     const firstAttempt = await login(page);
     if (firstAttempt) {
