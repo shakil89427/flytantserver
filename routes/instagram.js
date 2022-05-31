@@ -57,6 +57,15 @@ router.post("/instadata", async (req, res) => {
       await page.goto(`https://www.instagram.com/${username}`, {
         waitUntil: "networkidle0",
       });
+      const pathname = await page.evaluate(() => location?.pathname);
+      if (pathname?.includes("login")) {
+        await firestore
+          .collection("instagramCookie")
+          .doc("cookie")
+          .update({ cookie: [] });
+
+        return res.status(200).send("Use stored data");
+      }
       const data = await page.evaluate(
         () => document.querySelector("*").outerHTML
       );
