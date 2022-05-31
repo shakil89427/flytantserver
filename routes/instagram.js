@@ -100,7 +100,6 @@ router.post("/instadata", async (req, res) => {
   const startBrowser = async (username) => {
     try {
       const browser = await puppeteer.launch({
-        headless: false,
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
       });
       const [page] = await browser.pages();
