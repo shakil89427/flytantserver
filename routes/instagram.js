@@ -3,7 +3,7 @@ const router = express.Router();
 const axios = require("axios");
 const firestore = require("../firebase/firestore");
 const puppeteer = require("puppeteer");
-const fs = require("fs");
+const moment = require("moment");
 
 router.post("/instainfo", async (req, res) => {
   try {
@@ -13,15 +13,29 @@ router.post("/instainfo", async (req, res) => {
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
 
-    const response2 = await axios.get("https://graph.instagram.com/me", {
+    const response2 = await axios.get(
+      "https://graph.instagram.com/access_token",
+      {
+        params: {
+          grant_type: "ig_exchange_token",
+          client_secret: process.env.INSTAGRAM_CLIENT_SECRET,
+          access_token: response1.data.access_token,
+        },
+      }
+    );
+    const expires_in = moment().unix() + response2.data.expires_in;
+
+    const response3 = await axios.get("https://graph.instagram.com/me", {
       params: {
         fields: "id,username",
-        access_token: response1.data.access_token,
+        access_token: response2.data.access_token,
       },
     });
+
     const userInfo = {
-      username: response2.data.username,
-      instaId: response2.data.id,
+      username: response3.data.username,
+      instaId: response3.data.id,
+      tokenInfo: { access_token: response2.data.access_token, expires_in },
     };
     await firestore
       .collection("users")
@@ -38,9 +52,9 @@ router.post("/instainfo", async (req, res) => {
 
 router.post("/instadata", async (req, res) => {
   /* Get data */
-  const getData = async (browser, page) => {
+  const getData = async (browser, page, username) => {
     try {
-      await page.goto(`https://www.instagram.com/${req.body.username}`, {
+      await page.goto(`https://www.instagram.com/${username}`, {
         waitUntil: "networkidle0",
       });
       const data = await page.evaluate(
@@ -50,18 +64,15 @@ router.post("/instadata", async (req, res) => {
         .split("window._sharedData = ")[1]
         .split(";</script>")[0];
       const valid = JSON.parse(temp).entry_data;
-      const cookiesObject = await page.cookies();
-      fs.writeFile("cookie.json", JSON.stringify(cookiesObject), async () => {
-        await browser.close();
-        res.send(valid);
-      });
+      await browser.close();
+      res.send(valid);
     } catch (err) {
       res.status(200).send("Use stored data");
     }
   };
 
   /* Login on instagram */
-  const login = async (browser, page) => {
+  const login = async (browser, page, username) => {
     try {
       await page.goto("https://www.instagram.com/accounts/login/", {
         waitUntil: "networkidle0",
@@ -70,27 +81,102 @@ router.post("/instadata", async (req, res) => {
       await page.type("input[name=password]", process.env.INSTAGRAM_PASSWORD);
       await page.click('button[type="submit"]');
       await page.waitForTimeout(5000);
+      const pathname = await page.evaluate(() => location?.pathname);
+      if (pathname?.includes("login")) {
+        return res.status(200).send("Use stored data");
+      }
       const cookiesObject = await page.cookies();
-      fs.writeFile("cookie.json", JSON.stringify(cookiesObject), () => {
-        getData(browser, page);
-      });
+      await firestore
+        .collection("instagramCookie")
+        .doc("cookie")
+        .update({ cookie: cookiesObject });
+      getData(browser, page, username);
     } catch (err) {
       res.status(200).send("Use stored data");
     }
   };
 
   /* Start Browser and process login */
+  const startBrowser = async (username) => {
+    try {
+      const browser = await puppeteer.launch({
+        headless: false,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      });
+      const [page] = await browser.pages();
+      const cookieData = await firestore
+        .collection("instagramCookie")
+        .doc("cookie")
+        .get();
+      const cookie = cookieData?.data()?.cookie;
+      if (cookie?.length > 5) {
+        await page.setCookie(...cookie);
+        getData(browser, page, username);
+      } else {
+        login(browser, page, username);
+      }
+    } catch (err) {
+      res.status(200).send("Use stored data");
+    }
+  };
+
+  /* Get username */
+  const getUsername = async (access_token) => {
+    try {
+      const response = await axios.get("https://graph.instagram.com/me", {
+        params: {
+          fields: "username",
+          access_token: access_token,
+        },
+      });
+      startBrowser(response.data.username);
+    } catch (err) {
+      res.status(200).send("Use stored data");
+    }
+  };
+
+  /* Update accessToken */
+  const updateToken = async (access_token, userId) => {
+    try {
+      const response = await axios.get(
+        "https://graph.instagram.com/refresh_access_token",
+        {
+          params: {
+            grant_type: "ig_refresh_token",
+            access_token,
+          },
+        }
+      );
+      const userInfo = {
+        access_token: response.data.access_token,
+        expires_in: moment().unix() + response.data.expires_in,
+      };
+      await firestore
+        .collection("users")
+        .doc(userId)
+        .update({
+          ["linkedAccounts.Instagram.tokenInfo"]: userInfo,
+        });
+      getUsername(userInfo.access_token);
+    } catch (err) {
+      res.status(200).send("Use stored data");
+    }
+  };
+
+  /* Get usertoken from db */
   try {
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-    const [page] = await browser.pages();
-    const cookie = fs.readFileSync("cookie.json", "utf8");
-    if (cookie) {
-      await page.setCookie(...JSON.parse(cookie));
-      getData(browser, page);
+    const userData = await firestore
+      .collection("users")
+      .doc(req.body.userId)
+      .get();
+
+    const { expires_in, access_token } =
+      userData.data().linkedAccounts.Instagram.tokenInfo;
+
+    if (moment().unix() + 604800 < expires_in) {
+      getUsername(access_token);
     } else {
-      login(browser, page);
+      updateToken(access_token, req.body.userId);
     }
   } catch (err) {
     res.status(200).send("Use stored data");

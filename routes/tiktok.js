@@ -98,7 +98,6 @@ router.post("/tiktokdata", async (req, res) => {
       const { open_id, access_token } = response3.data.data;
       getData(open_id, access_token);
     } catch (err) {
-      console.log(err);
       res.status(401).send("Authentication required");
     }
   };
