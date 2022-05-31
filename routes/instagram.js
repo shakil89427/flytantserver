@@ -63,9 +63,26 @@ router.post("/instadata", async (req, res) => {
       const temp = data
         .split("window._sharedData = ")[1]
         .split(";</script>")[0];
-      const valid = JSON.parse(temp).entry_data;
+      const {
+        biography,
+        edge_follow,
+        edge_followed_by,
+        edge_owner_to_timeline_media,
+        full_name,
+        is_private,
+        profile_pic_url,
+      } = JSON.parse(temp).entry_data.ProfilePage[0].graphql.user;
+      const finaldata = {
+        biography,
+        edge_follow,
+        edge_followed_by,
+        edge_owner_to_timeline_media,
+        full_name,
+        is_private,
+        profile_pic_url,
+      };
       await browser.close();
-      res.send(valid);
+      res.send(finaldata);
     } catch (err) {
       res.status(200).send("Use stored data");
     }
