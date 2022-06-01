@@ -196,7 +196,7 @@ router.post("/instadata", async (req, res) => {
       .get();
 
     const { expires_in, access_token } =
-      userData.data().linkedAccounts.Instagram.tokenInfo;
+      userData.data().linkedAccounts.Instagram;
 
     if (moment().unix() + 604800 < expires_in) {
       getUsername(access_token);
