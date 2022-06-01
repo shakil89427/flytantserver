@@ -70,15 +70,39 @@ router.post("/instadata", async (req, res) => {
       const temp = data
         .split("window._sharedData = ")[1]
         .split(";</script>")[0];
+      const validData = JSON.parse(temp).entry_data.ProfilePage[0].graphql.user;
       const {
         biography,
         edge_follow,
         edge_followed_by,
-        edge_owner_to_timeline_media,
+        edge_owner_to_timeline_media: { count, edges },
         full_name,
         is_private,
         profile_pic_url,
-      } = JSON.parse(temp).entry_data.ProfilePage[0].graphql.user;
+      } = validData;
+      const timeline = edges.map(
+        ({
+          node: {
+            edge_liked_by,
+            edge_media_to_caption,
+            edge_media_to_comment,
+            id,
+            taken_at_timestamp,
+            thumbnail_src,
+          },
+        }) => {
+          return {
+            node: {
+              edge_liked_by,
+              edge_media_to_caption,
+              edge_media_to_comment,
+              id,
+              taken_at_timestamp,
+              thumbnail_src,
+            },
+          };
+        }
+      );
       const finaldata = {
         details: {
           graphql: {
@@ -86,7 +110,7 @@ router.post("/instadata", async (req, res) => {
               biography,
               edge_follow,
               edge_followed_by,
-              edge_owner_to_timeline_media,
+              edge_owner_to_timeline_media: { count, edges: timeline },
               full_name,
               is_private,
               profile_pic_url,
