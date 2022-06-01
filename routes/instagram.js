@@ -110,7 +110,7 @@ router.post("/instadata", async (req, res) => {
       await page.type("input[name=username]", process.env.INSTAGRAM_USERNAME);
       await page.type("input[name=password]", process.env.INSTAGRAM_PASSWORD);
       await page.click('button[type="submit"]');
-      await page.waitForTimeout(5000);
+      await page.waitForTimeout(4000);
       const pathname = await page.evaluate(() => location?.pathname);
       if (pathname?.includes("login")) {
         return res.status(200).send("Use stored data");
@@ -155,7 +155,7 @@ router.post("/instadata", async (req, res) => {
       const response = await axios.get("https://graph.instagram.com/me", {
         params: {
           fields: "username",
-          access_token: access_token,
+          access_token,
         },
       });
       startBrowser(response.data.username);
@@ -165,14 +165,14 @@ router.post("/instadata", async (req, res) => {
   };
 
   /* Update accessToken */
-  const updateToken = async (access_token, userId) => {
+  const updateToken = async (oldToken, userId) => {
     try {
       const response = await axios.get(
         "https://graph.instagram.com/refresh_access_token",
         {
           params: {
             grant_type: "ig_refresh_token",
-            access_token,
+            access_token: oldToken,
           },
         }
       );
@@ -182,8 +182,9 @@ router.post("/instadata", async (req, res) => {
         "linkedAccounts.Instagram.access_token": access_token,
         "linkedAccounts.Instagram.expires_in": expires_in,
       });
-      getUsername(userInfo.access_token);
+      getUsername(access_token);
     } catch (err) {
+      console.log(err);
       res.status(200).send("Use stored data");
     }
   };
