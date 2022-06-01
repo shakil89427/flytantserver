@@ -23,7 +23,6 @@ router.post("/instainfo", async (req, res) => {
         },
       }
     );
-    const expires_in = moment().unix() + response2.data.expires_in;
 
     const response3 = await axios.get("https://graph.instagram.com/me", {
       params: {
@@ -32,16 +31,15 @@ router.post("/instainfo", async (req, res) => {
       },
     });
 
-    const userInfo = {
-      username: response3.data.username,
-      instaId: response3.data.id,
-      tokenInfo: { access_token: response2.data.access_token, expires_in },
-    };
     await firestore
       .collection("users")
       .doc(req.body.userId)
       .update({
-        ["linkedAccounts.Instagram"]: userInfo,
+        "linkedAccounts.Instagram.access_token": response2.data.access_token,
+        "linkedAccounts.Instagram.expires_in":
+          moment().unix() + response2.data.expires_in,
+        "linkedAccounts.Instagram.username": response3.data.username,
+        "linkedAccounts.Instagram.instaId": response3.data.id,
       });
 
     res.send({ success: true });
@@ -82,13 +80,19 @@ router.post("/instadata", async (req, res) => {
         profile_pic_url,
       } = JSON.parse(temp).entry_data.ProfilePage[0].graphql.user;
       const finaldata = {
-        biography,
-        edge_follow,
-        edge_followed_by,
-        edge_owner_to_timeline_media,
-        full_name,
-        is_private,
-        profile_pic_url,
+        details: {
+          graphql: {
+            user: {
+              biography,
+              edge_follow,
+              edge_followed_by,
+              edge_owner_to_timeline_media,
+              full_name,
+              is_private,
+              profile_pic_url,
+            },
+          },
+        },
       };
       await browser.close();
       res.send(finaldata);
@@ -172,16 +176,12 @@ router.post("/instadata", async (req, res) => {
           },
         }
       );
-      const userInfo = {
-        access_token: response.data.access_token,
-        expires_in: moment().unix() + response.data.expires_in,
-      };
-      await firestore
-        .collection("users")
-        .doc(userId)
-        .update({
-          ["linkedAccounts.Instagram.tokenInfo"]: userInfo,
-        });
+      const access_token = response.data.access_token;
+      const expires_in = moment().unix() + response.data.expires_in;
+      await firestore.collection("users").doc(userId).update({
+        "linkedAccounts.Instagram.access_token": access_token,
+        "linkedAccounts.Instagram.expires_in": expires_in,
+      });
       getUsername(userInfo.access_token);
     } catch (err) {
       res.status(200).send("Use stored data");
