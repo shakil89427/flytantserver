@@ -50,7 +50,7 @@ router.post("/instainfo", async (req, res) => {
 
 router.post("/instadata", async (req, res) => {
   /* Get data */
-  const getData = async (browser, page, username) => {
+  const getData = async (browser, page, username, userId) => {
     try {
       await page.goto(`https://www.instagram.com/${username}`, {
         waitUntil: "networkidle0",
@@ -94,6 +94,9 @@ router.post("/instadata", async (req, res) => {
           },
         },
       };
+      await firestore.collection("users").doc(userId).update({
+        "linkedAccounts.Instagram.details": finaldata.details,
+      });
       await browser.close();
       res.send(finaldata);
     } catch (err) {
@@ -102,7 +105,7 @@ router.post("/instadata", async (req, res) => {
   };
 
   /* Login on instagram */
-  const login = async (browser, page, username) => {
+  const login = async (browser, page, username, userId) => {
     try {
       await page.goto("https://www.instagram.com/accounts/login/", {
         waitUntil: "networkidle0",
@@ -120,14 +123,14 @@ router.post("/instadata", async (req, res) => {
         .collection("instagramCookie")
         .doc("cookie")
         .update({ cookie: cookiesObject });
-      getData(browser, page, username);
+      getData(browser, page, username, userId);
     } catch (err) {
       res.status(200).send("Use stored data");
     }
   };
 
   /* Start Browser and process login */
-  const startBrowser = async (username) => {
+  const startBrowser = async (username, userId) => {
     try {
       const browser = await puppeteer.launch({
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -140,9 +143,9 @@ router.post("/instadata", async (req, res) => {
       const cookie = cookieData?.data()?.cookie;
       if (cookie?.length > 5) {
         await page.setCookie(...cookie);
-        getData(browser, page, username);
+        getData(browser, page, username, userId);
       } else {
-        login(browser, page, username);
+        login(browser, page, username, userId);
       }
     } catch (err) {
       res.status(200).send("Use stored data");
@@ -150,7 +153,7 @@ router.post("/instadata", async (req, res) => {
   };
 
   /* Get username */
-  const getUsername = async (access_token) => {
+  const getUsername = async (access_token, userId) => {
     try {
       const response = await axios.get("https://graph.instagram.com/me", {
         params: {
@@ -158,7 +161,7 @@ router.post("/instadata", async (req, res) => {
           access_token,
         },
       });
-      startBrowser(response.data.username);
+      startBrowser(response.data.username, userId);
     } catch (err) {
       res.status(200).send("Use stored data");
     }
@@ -182,7 +185,7 @@ router.post("/instadata", async (req, res) => {
         "linkedAccounts.Instagram.access_token": access_token,
         "linkedAccounts.Instagram.expires_in": expires_in,
       });
-      getUsername(access_token);
+      getUsername(access_token, userId);
     } catch (err) {
       console.log(err);
       res.status(200).send("Use stored data");
@@ -200,7 +203,7 @@ router.post("/instadata", async (req, res) => {
       userData.data().linkedAccounts.Instagram;
 
     if (moment().unix() + 604800 < expires_in) {
-      getUsername(access_token);
+      getUsername(access_token, req.body.userId);
     } else {
       updateToken(access_token, req.body.userId);
     }
