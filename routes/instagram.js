@@ -113,7 +113,7 @@ router.post("/instadata", async (req, res) => {
       await firestore.collection("users").doc(userId).update({
         "linkedAccounts.Instagram.details": finaldata.details,
       });
-      res.status(200).send("Use stored data");
+      res.send(finaldata);
     } catch (err) {
       res.status(200).send("Use stored data");
     }
