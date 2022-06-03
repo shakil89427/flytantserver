@@ -13,6 +13,7 @@ const sendEmail = require("./routes/sendEmail");
 const basic = require("./routes/basic");
 const razorpay = require("./routes/razorPay");
 const subscribe = require("./routes/subscribe");
+const getImage = require("./routes/getImage");
 
 /* Middlewares */
 app.use(express.urlencoded({ extended: true }));
@@ -33,6 +34,7 @@ app.use(sendEmail);
 app.use(basic);
 app.use(razorpay);
 app.use(subscribe);
+app.use(getImage);
 
 /* Port listener */
 app.listen(PORT, () => {
