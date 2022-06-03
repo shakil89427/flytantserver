@@ -10,7 +10,7 @@ router.post("/getimage", async (req, res) => {
     const image = Buffer.from(data, "binary").toString("base64");
     res.send({ image });
   } catch (err) {
-    res.status(200).send("Load error");
+    res.status(404).send("Not Found");
   }
 });
 
