@@ -170,10 +170,18 @@ router.post("/instadata", async (req, res) => {
     const instagram = userData.data().linkedAccounts.Instagram;
 
     if (instagram?.access_token && instagram?.expires_in) {
-      if (moment().unix() + 604800 < expires_in) {
-        getUsername(access_token, req.body.userId, instagram?.username);
+      if (moment().unix() + 604800 > instagram?.expires_in) {
+        getUsername(
+          instagram?.access_token,
+          req.body.userId,
+          instagram?.username
+        );
       } else {
-        updateToken(access_token, req.body.userId, instagram?.username);
+        updateToken(
+          instagram?.access_token,
+          req.body.userId,
+          instagram?.username
+        );
       }
     } else {
       getData(instagram?.username, req.body.userId);
