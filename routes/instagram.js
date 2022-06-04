@@ -120,22 +120,24 @@ router.post("/instadata", async (req, res) => {
   };
 
   /* Get username */
-  const getUsername = async (access_token, userId) => {
+  const getUsername = async (access_token, userId, oldUsername) => {
     try {
-      const response = await axios.get("https://graph.instagram.com/me", {
+      const {
+        data: { username },
+      } = await axios.get("https://graph.instagram.com/me", {
         params: {
           fields: "username",
           access_token,
         },
       });
-      getData(response.data.username, userId);
+      getData(username, userId);
     } catch (err) {
-      res.status(200).send("Use stored data");
+      getData(oldUsername, userId);
     }
   };
 
   /* Update accessToken */
-  const updateToken = async (oldToken, userId) => {
+  const updateToken = async (oldToken, userId, oldUsername) => {
     try {
       const response = await axios.get(
         "https://graph.instagram.com/refresh_access_token",
@@ -152,9 +154,9 @@ router.post("/instadata", async (req, res) => {
         "linkedAccounts.Instagram.access_token": access_token,
         "linkedAccounts.Instagram.expires_in": expires_in,
       });
-      getUsername(access_token, userId);
+      getUsername(access_token, userId, oldUsername);
     } catch (err) {
-      res.status(200).send("Use stored data");
+      getData(oldUsername, userId);
     }
   };
 
@@ -165,13 +167,16 @@ router.post("/instadata", async (req, res) => {
       .doc(req.body.userId)
       .get();
 
-    const { expires_in, access_token } =
-      userData.data().linkedAccounts.Instagram;
+    const instagram = userData.data().linkedAccounts.Instagram;
 
-    if (moment().unix() + 604800 < expires_in) {
-      getUsername(access_token, req.body.userId);
+    if (instagram?.access_token && instagram?.expires_in) {
+      if (moment().unix() + 604800 < expires_in) {
+        getUsername(access_token, req.body.userId, instagram?.username);
+      } else {
+        updateToken(access_token, req.body.userId, instagram?.username);
+      }
     } else {
-      updateToken(access_token, req.body.userId);
+      getData(instagram?.username, req.body.userId);
     }
   } catch (err) {
     res.status(200).send("Use stored data");
