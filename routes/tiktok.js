@@ -15,15 +15,19 @@ router.post("/tiktokinfo", async (req, res) => {
         },
       }
     );
-    const expires_in = moment().unix() + response.data.data.expires_in;
-    await firestore
-      .collection("users")
-      .doc(req.body.userId)
-      .update({
-        ["linkedAccounts.Tiktok"]: { ...response.data.data, expires_in },
-      });
+    if (response.data.data.expires_in) {
+      const expires_in = moment().unix() + response.data.data.expires_in;
+      await firestore
+        .collection("users")
+        .doc(req.body.userId)
+        .update({
+          ["linkedAccounts.Tiktok"]: { ...response.data.data, expires_in },
+        });
 
-    res.send({ success: true });
+      res.send({ success: true });
+    } else {
+      res.status(404).send("Oh, something went wrong");
+    }
   } catch (err) {
     res.status(404).send("Oh, something went wrong");
   }
