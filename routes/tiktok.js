@@ -8,7 +8,7 @@ router.post("/tiktokinfo", async (req, res) => {
   try {
     const response = await axios.post(
       "https://open-api.tiktok.com/oauth/access_token",
-      `client_key=${process.env.TIKTOK_CLIENT_KEY}&grant_type=authorization_code&client_secret=${process.env.TIKTOK_CLIENT_SECRET}&code=${req.body.code}`,
+      `client_key=${process.env.TIKTOK_CLIENT_KEY}&client_secret=${process.env.TIKTOK_CLIENT_SECRET}&code=${req.body.code}&grant_type=authorization_code`,
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
     if (response.data.data.expires_in) {
