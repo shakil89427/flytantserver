@@ -60,7 +60,7 @@ router.post("/youtubedata", async (req, res) => {
         "https://www.googleapis.com/youtube/v3/videos",
         {
           params: {
-            part: "snippet,statistics,player",
+            part: "snippet,statistics,player,contentDetails",
             id: videoIds.toString(),
             key: process.env.GOOGLE_API_KEY,
           },
