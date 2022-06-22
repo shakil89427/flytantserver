@@ -15,6 +15,7 @@ const razorpay = require("./routes/razorPay");
 const subscribe = require("./routes/subscribe");
 const getImage = require("./routes/getImage");
 const getVideo = require("./routes/getVideo");
+const getUser = require("./routes/getUser");
 
 /* Middlewares */
 app.use(express.urlencoded({ extended: true }));
@@ -37,6 +38,7 @@ app.use(razorpay);
 app.use(subscribe);
 app.use(getImage);
 app.use(getVideo);
+app.use(getUser);
 
 /* Port listener */
 app.listen(PORT, () => {
