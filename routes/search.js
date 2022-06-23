@@ -122,7 +122,7 @@ router.post("/search", async (req, res) => {
     }
   };
 
-  /* Check keyword present or not */
+  /* Check keyword exist or not */
   if (keyword && keyword?.length > 0) {
     searchData();
   } else {
