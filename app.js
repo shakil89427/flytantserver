@@ -16,6 +16,7 @@ const subscribe = require("./routes/subscribe");
 const getImage = require("./routes/getImage");
 const getVideo = require("./routes/getVideo");
 const getUser = require("./routes/getUser");
+const search = require("./routes/search");
 
 /* Middlewares */
 app.use(express.urlencoded({ extended: true }));
@@ -39,6 +40,7 @@ app.use(subscribe);
 app.use(getImage);
 app.use(getVideo);
 app.use(getUser);
+app.use(search);
 
 /* Port listener */
 app.listen(PORT, () => {
