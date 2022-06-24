@@ -98,11 +98,11 @@ router.post("/search", async (req, res) => {
       response.forEach((item, index) => {
         if (item?.status === "fulfilled" && index === 0) {
           const validData = modifyInstagram(item?.value?.data?.items);
-          allData = [...allData, ...validData];
+          allData.push(validData);
         }
         if (item?.status === "fulfilled" && index === 1) {
           const validData = modifyYoutube(item?.value?.data?.items);
-          allData = [...allData, ...validData];
+          allData.push(validData);
         }
       });
       res.send(allData);
