@@ -5,10 +5,10 @@ const { randomUUID } = require("crypto");
 
 router.post("/search", async (req, res) => {
   const keyword = req?.body?.keyword;
+  const allData = [];
 
   /* Modify instagram data */
   const modifyInstagram = (items) => {
-    let temp = [];
     items?.forEach((item) => {
       try {
         const metatags = item.pagemap.metatags[0];
@@ -34,7 +34,7 @@ router.post("/search", async (req, res) => {
             .split("following")[0]
             .replace(/\D/g, "")
         );
-        temp.push({
+        allData.push({
           randomId: randomUUID(),
           category: "instagram",
           bio,
@@ -45,17 +45,15 @@ router.post("/search", async (req, res) => {
         });
       } catch (err) {}
     });
-    return temp;
   };
 
   const modifyYoutube = (items) => {
-    let temp = [];
     items?.forEach((item) => {
       try {
         const {
           snippet: { channelId, description, thumbnails, channelTitle },
         } = item;
-        temp.push({
+        allData.push({
           randomId: randomUUID(),
           category: "youtube",
           channelId,
@@ -65,7 +63,6 @@ router.post("/search", async (req, res) => {
         });
       } catch (err) {}
     });
-    return temp;
   };
 
   /* Search for data */
@@ -94,15 +91,12 @@ router.post("/search", async (req, res) => {
 
     try {
       const response = await Promise.allSettled(promises);
-      let allData = [];
       response.forEach((item, index) => {
         if (item?.status === "fulfilled" && index === 0) {
-          const validData = modifyInstagram(item?.value?.data?.items);
-          allData.push(validData);
+          modifyInstagram(item?.value?.data?.items);
         }
         if (item?.status === "fulfilled" && index === 1) {
-          const validData = modifyYoutube(item?.value?.data?.items);
-          allData.push(validData);
+          modifyYoutube(item?.value?.data?.items);
         }
       });
       res.send(allData);
