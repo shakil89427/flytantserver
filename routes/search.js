@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
+const { randomUUID } = require("crypto");
 
 router.post("/search", async (req, res) => {
   const keyword = req?.body?.keyword;
@@ -34,6 +35,7 @@ router.post("/search", async (req, res) => {
             .replace(/\D/g, "")
         );
         temp.push({
+          randomId: randomUUID(),
           category: "instagram",
           bio,
           profileImage,
@@ -54,6 +56,7 @@ router.post("/search", async (req, res) => {
           snippet: { channelId, description, thumbnails, channelTitle },
         } = item;
         temp.push({
+          randomId: randomUUID(),
           category: "youtube",
           channelId,
           description,
