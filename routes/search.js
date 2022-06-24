@@ -33,7 +33,14 @@ router.post("/search", async (req, res) => {
             .split("following")[0]
             .replace(/\D/g, "")
         );
-        temp.push({ bio, profileImage, username, followers, following });
+        temp.push({
+          category: "instagram",
+          bio,
+          profileImage,
+          username,
+          followers,
+          following,
+        });
       } catch (err) {}
     });
     return temp;
@@ -44,28 +51,14 @@ router.post("/search", async (req, res) => {
     items?.forEach((item) => {
       try {
         const {
-          etag,
-          snippet: {
-            publishedAt,
-            channelId,
-            title,
-            description,
-            thumbnails,
-            channelTitle,
-            liveBroadcastContent,
-            publishTime,
-          },
+          snippet: { channelId, description, thumbnails, channelTitle },
         } = item;
         temp.push({
-          etag,
-          publishedAt,
+          category: "youtube",
           channelId,
-          title,
           description,
           thumbnails,
           channelTitle,
-          liveBroadcastContent,
-          publishTime,
         });
       } catch (err) {}
     });
@@ -93,27 +86,20 @@ router.post("/search", async (req, res) => {
         key: process.env.GOOGLE_API_KEY,
       },
     });
-    const twitter = axios.get("http://api.twitter.com/1.1/users/search.json", {
-      params: {
-        q: keyword,
-        page: 1,
-      },
-    });
 
-    promises.push(instagram, youtube, twitter);
+    promises.push(instagram, youtube);
 
     try {
       const response = await Promise.allSettled(promises);
-      let allData = {};
+      let allData = [];
       response.forEach((item, index) => {
         if (item?.status === "fulfilled" && index === 0) {
-          allData.instagram = modifyInstagram(item?.value?.data?.items);
+          const validData = modifyInstagram(item?.value?.data?.items);
+          allData = [...allData, ...validData];
         }
         if (item?.status === "fulfilled" && index === 1) {
-          allData.youtube = modifyYoutube(item?.value?.data?.items);
-        }
-        if (item?.status === "fulfilled" && index === 2) {
-          allData.twitter = item?.value?.data;
+          const validData = modifyYoutube(item?.value?.data?.items);
+          allData = [...allData, ...validData];
         }
       });
       res.send(allData);
