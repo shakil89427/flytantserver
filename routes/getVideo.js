@@ -4,16 +4,10 @@ const axios = require("axios");
 
 router.post("/getvideo", async (req, res) => {
   try {
-    const {
-      data: {
-        request: {
-          files: { progressive },
-        },
-      },
-    } = await axios.get(
+    const { data } = await axios.get(
       `https://player.vimeo.com/video/${req.body.videoId}/config`
     );
-    res.send(progressive);
+    res.send(data);
   } catch (err) {
     res.status(404).send("Not Found");
   }
