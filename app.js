@@ -5,6 +5,9 @@ const cors = require("cors");
 const PORT = process.env.PORT || 5000;
 const admin = require("./firebase/admin");
 
+/* Local file */
+const skipPaths = require("./skipPaths/skipPaths");
+
 /* Require routes */
 const instagram = require("./routes/instagram");
 const youtube = require("./routes/youtube");
@@ -27,10 +30,15 @@ app.use(cors());
 /* Fetch all tokens from remoteconfig */
 app.all("*", async (req, res, next) => {
   try {
-    const config = admin.remoteConfig();
-    const { parameters } = await config.getTemplate();
-    req.secrets = parameters;
-    next();
+    const matched = skipPaths?.find((item) => item === req.path);
+    if (matched) {
+      next();
+    } else {
+      const config = admin.remoteConfig();
+      const { parameters } = await config.getTemplate();
+      req.secrets = parameters;
+      next();
+    }
   } catch (err) {
     res.status(500).send("Something went wrong");
   }
