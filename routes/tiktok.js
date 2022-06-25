@@ -7,9 +7,13 @@ const moment = require("moment");
 
 router.post("/tiktokinfo", async (req, res) => {
   try {
+    const { client_key, client_secret } = await JSON.parse(
+      req.secrets.tiktok_keys.defaultValue.value
+    );
+
     const response = await axios.post(
       "https://open-api.tiktok.com/oauth/access_token",
-      `client_key=${process.env.TIKTOK_CLIENT_KEY}&client_secret=${process.env.TIKTOK_CLIENT_SECRET}&code=${req.body.code}&grant_type=authorization_code`,
+      `client_key=${client_key}&client_secret=${client_secret}&code=${req.body.code}&grant_type=authorization_code`,
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
     if (response.data.data.expires_in) {
@@ -80,9 +84,13 @@ router.post("/tiktokdata", async (req, res) => {
   // get tokens
   const loadTokens = async (refresh_token) => {
     try {
+      const { client_key } = await JSON.parse(
+        req.secrets.tiktok_keys.defaultValue.value
+      );
+
       const response3 = await axios.post(
         "https://open-api.tiktok.com/oauth/refresh_token",
-        `refresh_token=${refresh_token}&client_key=${process.env.TIKTOK_CLIENT_KEY}&grant_type=refresh_token`,
+        `refresh_token=${refresh_token}&client_key=${client_key}&grant_type=refresh_token`,
         {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",

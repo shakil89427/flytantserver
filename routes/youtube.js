@@ -30,13 +30,17 @@ router.post("/youtubeinfo", async (req, res) => {
 
 router.post("/youtubedata", async (req, res) => {
   try {
+    const { api_key } = await JSON.parse(
+      req.secrets.youtube_keys.defaultValue.value
+    );
+
     const response1 = await axios.get(
       "https://www.googleapis.com/youtube/v3/channels",
       {
         params: {
           id: req.body.channelId,
           part: "snippet,statistics",
-          key: process.env.GOOGLE_API_KEY,
+          key: api_key,
         },
       }
     );
@@ -50,7 +54,7 @@ router.post("/youtubedata", async (req, res) => {
           maxResults: 50,
           order: "date",
           type: "video",
-          key: process.env.GOOGLE_API_KEY,
+          key: api_key,
         },
       }
     );
@@ -63,7 +67,7 @@ router.post("/youtubedata", async (req, res) => {
           params: {
             part: "snippet,statistics,player,contentDetails",
             id: videoIds.toString(),
-            key: process.env.GOOGLE_API_KEY,
+            key: api_key,
           },
         }
       );

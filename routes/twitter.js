@@ -7,9 +7,13 @@ const moment = require("moment");
 
 router.post("/twitterinfo", async (req, res) => {
   try {
+    const { client_id, redirect_uri } = await JSON.parse(
+      req.secrets.twitter_keys.defaultValue.value
+    );
+
     const response = await axios.post(
       "https://api.twitter.com/2/oauth2/token",
-      `client_id=${process.env.TWITTER_OAUTH2_CLIENT_ID}&grant_type=authorization_code&redirect_uri=${process.env.TWITTER_REDIRECT_URI}&code=${req.body.code}&code_verifier=challenge`,
+      `client_id=${client_id}&grant_type=authorization_code&redirect_uri=${redirect_uri}&code=${req.body.code}&code_verifier=challenge`,
       {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -67,9 +71,13 @@ router.post("/twitterdata", async (req, res) => {
   // get user token
   const loadTokens = async (refresh_token) => {
     try {
+      const { client_id } = await JSON.parse(
+        req.secrets.twitter_keys.defaultValue.value
+      );
+
       const response3 = await axios.post(
         "https://api.twitter.com/2/oauth2/token",
-        `refresh_token=${refresh_token}&grant_type=refresh_token&client_id=${process.env.TWITTER_OAUTH2_CLIENT_ID}`,
+        `refresh_token=${refresh_token}&grant_type=refresh_token&client_id=${client_id}`,
         {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
