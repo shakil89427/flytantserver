@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const firestore = require("../firebase/firestore");
+const admin = require("../firebase/admin");
+const firestore = admin.firestore();
 const moment = require("moment");
 
 router.post("/twitterinfo", async (req, res) => {

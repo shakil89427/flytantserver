@@ -18,6 +18,4 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-const firestore = admin.firestore();
-
-module.exports = firestore;
+module.exports = admin;
