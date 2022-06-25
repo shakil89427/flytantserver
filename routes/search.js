@@ -68,11 +68,14 @@ router.post("/search", async (req, res) => {
   /* Search for data */
   const searchData = async () => {
     const promises = [];
+    const { cx, api_key } = await JSON.parse(
+      req.secrets.google_search_keys.defaultValue.value
+    );
     const instagram = axios.get("https://www.googleapis.com/customsearch/v1", {
       params: {
         q: keyword,
-        cx: process.env.GOOGLE_SEARCH_CX,
-        key: process.env.GOOGLE_SEARCH_API_KEY,
+        cx,
+        key: api_key,
       },
     });
     const youtube = axios.get("https://www.googleapis.com/youtube/v3/search", {

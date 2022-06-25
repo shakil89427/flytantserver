@@ -5,11 +5,11 @@ require("dotenv").config();
 
 router.post("/createpayment", async (req, res) => {
   try {
+    const { key_id, key_secret } = await JSON.parse(
+      req.secrets.razorpay_keys.defaultValue.value
+    );
     const { ammount, currency, notes } = req.body;
-    const instance = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
+    const instance = new Razorpay({ key_id, key_secret });
     const options = {
       amount: ammount * 100,
       currency,

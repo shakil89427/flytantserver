@@ -6,6 +6,10 @@ require("dotenv").config();
 /* Send Career Mail */
 router.post("/sendmailCareer", async (req, res) => {
   try {
+    const { career_mail } = await JSON.parse(
+      req.secrets.contact_mails.defaultValue.value
+    );
+
     const { ask, name, email, text, url } = await req.body;
     let transporter = nodemailer.createTransport({
       service: "gmail",
@@ -20,7 +24,7 @@ router.post("/sendmailCareer", async (req, res) => {
 
     let mailOption = {
       from: process.env.EMAIL,
-      to: process.env.CAREER_MAIL,
+      to: career_mail,
       subject: `Career: ${name}`,
       text: `${ask}\nEmail: ${email}\nMessage: ${text} \nResume: ${url}`,
     };
@@ -40,6 +44,10 @@ router.post("/sendmailCareer", async (req, res) => {
 /* Send Brand contact mail */
 router.post("/sendmailBrandsContact", async (req, res) => {
   try {
+    const { brandcontact_mail } = await JSON.parse(
+      req.secrets.contact_mails.defaultValue.value
+    );
+
     const { name, brandname, email, message, contact } = await req.body;
 
     let transporter = nodemailer.createTransport({
@@ -55,7 +63,7 @@ router.post("/sendmailBrandsContact", async (req, res) => {
 
     let mailOption = {
       from: process.env.EMAIL,
-      to: process.env.BRANDCONTACT_MAIL,
+      to: brandcontact_mail,
       subject: `Brands: ${name}`,
       text: `Name: ${name}\nEmail: ${email}\nContact: ${contact}\nBrand Name: ${brandname}\nMessage: ${message}`,
     };
@@ -75,6 +83,9 @@ router.post("/sendmailBrandsContact", async (req, res) => {
 /* Send contact mail */
 router.post("/sendmailContact", async (req, res) => {
   try {
+    const { contact_mail } = await JSON.parse(
+      req.secrets.contact_mails.defaultValue.value
+    );
     const { ask, name, email, text } = await req.body;
 
     let transporter = nodemailer.createTransport({
@@ -90,7 +101,7 @@ router.post("/sendmailContact", async (req, res) => {
 
     let mailOption = {
       from: process.env.EMAIL,
-      to: process.env.CONTACT_MAIL,
+      to: contact_mail,
       subject: `Contact: ${name}`,
       text: `Question: ${ask}\nEmail: ${email}\nMessage: ${text}`,
     };
