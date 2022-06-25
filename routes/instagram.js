@@ -7,9 +7,12 @@ const moment = require("moment");
 
 router.post("/instainfo", async (req, res) => {
   try {
+    const { instagram_app_id, instagram_secret, redirect_uri } =
+      await JSON.parse(req.secrets.instagram_keys.defaultValue.value);
+
     const response1 = await axios.post(
       "https://api.instagram.com/oauth/access_token",
-      `client_id=${process.env.INSTAGRAM_CLIENT_ID}&client_secret=${process.env.INSTAGRAM_CLIENT_SECRET}&grant_type=authorization_code&redirect_uri=${process.env.INSTAGRAM_REDIRECT_URI}&code=${req.body.code}`,
+      `client_id=${instagram_app_id}&client_secret=${instagram_secret}&grant_type=authorization_code&redirect_uri=${redirect_uri}&code=${req.body.code}`,
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
 
@@ -18,7 +21,7 @@ router.post("/instainfo", async (req, res) => {
       {
         params: {
           grant_type: "ig_exchange_token",
-          client_secret: process.env.INSTAGRAM_CLIENT_SECRET,
+          client_secret: instagram_secret,
           access_token: response1.data.access_token,
         },
       }

@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const PORT = process.env.PORT || 5000;
+const admin = require("./firebase/admin");
 
 /* Require routes */
 const instagram = require("./routes/instagram");
@@ -22,6 +23,18 @@ const search = require("./routes/search");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+
+/* Fetch all tokens from remoteconfig */
+app.all("*", async (req, res, next) => {
+  try {
+    const config = admin.remoteConfig();
+    const { parameters } = await config.getTemplate();
+    req.secrets = parameters;
+    next();
+  } catch (err) {
+    res.status(500).send("Something went wrong");
+  }
+});
 
 /* Basic route for test */
 app.get("/", (req, res) => {
