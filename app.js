@@ -21,6 +21,7 @@ const getImage = require("./routes/getImage");
 const getVideo = require("./routes/getVideo");
 const getUser = require("./routes/getUser");
 const search = require("./routes/search");
+const instagramSearch = require("./routes/instagramSearch");
 
 /* Middlewares */
 app.use(express.urlencoded({ extended: true }));
@@ -62,6 +63,7 @@ app.use(getImage);
 app.use(getVideo);
 app.use(getUser);
 app.use(search);
+app.use(instagramSearch);
 
 /* Port listener */
 app.listen(PORT, () => {
