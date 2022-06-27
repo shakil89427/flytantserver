@@ -36,7 +36,7 @@ router.post("/search", async (req, res) => {
         );
         allData.push({
           randomId: randomUUID(),
-          category: "instagram",
+          category: "Instagram",
           bio,
           profileImage,
           username,
@@ -55,7 +55,7 @@ router.post("/search", async (req, res) => {
         } = item;
         allData.push({
           randomId: randomUUID(),
-          category: "youtube",
+          category: "Youtube",
           channelId,
           description,
           thumbnails,
