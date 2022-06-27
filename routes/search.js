@@ -71,6 +71,9 @@ router.post("/search", async (req, res) => {
     const { cx, api_key } = await JSON.parse(
       req.secrets.google_search_keys.defaultValue.value
     );
+    const youtubeKeys = await JSON.parse(
+      req.secrets.youtube_keys.defaultValue.value
+    );
     const instagram = axios.get("https://www.googleapis.com/customsearch/v1", {
       params: {
         q: keyword,
@@ -86,7 +89,7 @@ router.post("/search", async (req, res) => {
         order: "rating",
         type: "channel",
         maxResults: 50,
-        key: process.env.GOOGLE_API_KEY,
+        key: youtubeKeys.api_key,
       },
     });
 
