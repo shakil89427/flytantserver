@@ -9,7 +9,7 @@ router.post("/basic", async (req, res) => {
     );
     res.send(response.data);
   } catch (err) {
-    res.send(false);
+    res.status(404)("Not found");
   }
 });
 
