@@ -8,6 +8,7 @@ const skip = [
   "/subscribe",
   "/youtubeinfo",
   "/instagramsearch",
+  "/gecourse",
 ];
 
 module.exports = skip;
