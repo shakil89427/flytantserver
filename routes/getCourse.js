@@ -5,8 +5,9 @@ const firestore = admin.firestore();
 
 router.get("/getcourse", async (req, res) => {
   try {
-    const allData = await firestore.collection("courses").get();
-    res.send(allData.docs[0].data());
+    const { docs } = await firestore.collection("courses").get();
+    const final = docs.map((item) => item.data());
+    res.send(final);
   } catch (err) {
     res.status(404).send("Oh, something went wrong");
   }
