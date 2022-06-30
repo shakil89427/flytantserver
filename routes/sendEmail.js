@@ -11,7 +11,7 @@ router.post("/sendmailCareer", async (req, res) => {
     const { user, pass } = await JSON.parse(
       req.secrets.email_secrets.defaultValue.value
     );
-    const transporter = nodemailer.createTransport({
+    let transporter = nodemailer.createTransport({
       host: "smtp.hostinger.com",
       port: 465,
       secure: true,
@@ -48,7 +48,7 @@ router.post("/sendmailBrandsContact", async (req, res) => {
     const { user, pass } = await JSON.parse(
       req.secrets.email_secrets.defaultValue.value
     );
-    const transporter = nodemailer.createTransport({
+    let transporter = nodemailer.createTransport({
       host: "smtp.hostinger.com",
       port: 465,
       secure: true,
@@ -85,7 +85,7 @@ router.post("/sendmailContact", async (req, res) => {
     const { user, pass } = await JSON.parse(
       req.secrets.email_secrets.defaultValue.value
     );
-    const transporter = nodemailer.createTransport({
+    let transporter = nodemailer.createTransport({
       host: "smtp.hostinger.com",
       port: 465,
       secure: true,
@@ -120,20 +120,18 @@ router.post("/welcomemail", async (req, res) => {
     const { user, pass } = await JSON.parse(
       req.secrets.email_secrets.defaultValue.value
     );
-    const transporter = nodemailer.createTransport({
+    let transporter = nodemailer.createTransport({
       host: "smtp.hostinger.com",
       port: 465,
       secure: true,
       auth: { user, pass },
     });
-
     let mailOption = {
       from: user,
       to: req.body.email,
       subject: "Welcome to Flytant",
       text: `You have registered successfully`,
     };
-
     transporter.sendMail(mailOption, (err, success) => {
       if (err) {
         res.send({ success: false });
@@ -142,7 +140,6 @@ router.post("/welcomemail", async (req, res) => {
       }
     });
   } catch (err) {
-    console.log(err);
     res.status(500).send({ message: "Something went wrong" });
   }
 });
