@@ -1,8 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
-const { google } = require("googleapis");
-const OAuth2 = google.auth.OAuth2;
 require("dotenv").config();
 
 /* Send Career Mail */
@@ -11,33 +9,23 @@ router.post("/sendmailCareer", async (req, res) => {
     const { career_mail } = await JSON.parse(
       req.secrets.contact_mails.defaultValue.value
     );
-    const { clientId, clientSecret, refreshToken } = await JSON.parse(
-      req.secrets.gmail_keys.defaultValue.value
+    const secrets = await JSON.parse(
+      req.secrets.email_secrets.defaultValue.value
     );
-
-    const myOAuth2Client = new OAuth2(
-      clientId,
-      clientSecret,
-      "https://developers.google.com/oauthplayground"
-    );
-    myOAuth2Client.setCredentials({ refresh_token: refreshToken });
-    const accessToken = await myOAuth2Client.getAccessToken();
-
-    const { ask, name, email, text, url } = await req.body;
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.hostinger.com",
+      port: 465,
+      secure: true,
       auth: {
-        type: "OAuth2",
-        user: process.env.EMAIL,
-        clientId,
-        clientSecret,
-        refreshToken,
-        accessToken,
+        user: secrets.email,
+        pass: secrets.password,
       },
     });
 
+    const { ask, name, email, text, url } = await req.body;
+
     let mailOption = {
-      from: process.env.EMAIL,
+      from: secrets.email,
       to: career_mail,
       subject: `Career: ${name}`,
       text: `${ask}\nEmail: ${email}\nMessage: ${text} \nResume: ${url}`,
@@ -61,34 +49,23 @@ router.post("/sendmailBrandsContact", async (req, res) => {
     const { brandcontact_mail } = await JSON.parse(
       req.secrets.contact_mails.defaultValue.value
     );
-    const { clientId, clientSecret, refreshToken } = await JSON.parse(
-      req.secrets.gmail_keys.defaultValue.value
+    const secrets = await JSON.parse(
+      req.secrets.email_secrets.defaultValue.value
     );
-
-    const myOAuth2Client = new OAuth2(
-      clientId,
-      clientSecret,
-      "https://developers.google.com/oauthplayground"
-    );
-    myOAuth2Client.setCredentials({ refresh_token: refreshToken });
-    const accessToken = await myOAuth2Client.getAccessToken();
-
-    const { name, brandname, email, message, contact } = await req.body;
-
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.hostinger.com",
+      port: 465,
+      secure: true,
       auth: {
-        type: "OAuth2",
-        user: process.env.EMAIL,
-        clientId,
-        clientSecret,
-        refreshToken,
-        accessToken,
+        user: secrets.email,
+        pass: secrets.password,
       },
     });
 
+    const { name, brandname, email, message, contact } = await req.body;
+
     let mailOption = {
-      from: process.env.EMAIL,
+      from: secrets.email,
       to: brandcontact_mail,
       subject: `Brands: ${name}`,
       text: `Name: ${name}\nEmail: ${email}\nContact: ${contact}\nBrand Name: ${brandname}\nMessage: ${message}`,
@@ -112,32 +89,22 @@ router.post("/sendmailContact", async (req, res) => {
     const { contact_mail } = await JSON.parse(
       req.secrets.contact_mails.defaultValue.value
     );
-    const { clientId, clientSecret, refreshToken } = await JSON.parse(
-      req.secrets.gmail_keys.defaultValue.value
+    const secrets = await JSON.parse(
+      req.secrets.email_secrets.defaultValue.value
     );
-
-    const myOAuth2Client = new OAuth2(
-      clientId,
-      clientSecret,
-      "https://developers.google.com/oauthplayground"
-    );
-    myOAuth2Client.setCredentials({ refresh_token: refreshToken });
-    const accessToken = await myOAuth2Client.getAccessToken();
-    const { ask, name, email, text } = await req.body;
 
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.hostinger.com",
+      port: 465,
+      secure: true,
       auth: {
-        type: "OAuth2",
-        user: process.env.EMAIL,
-        clientId,
-        clientSecret,
-        refreshToken,
-        accessToken,
+        user: secrets.email,
+        pass: secrets.password,
       },
     });
+
     let mailOption = {
-      from: process.env.EMAIL,
+      from: secrets.email,
       to: contact_mail,
       subject: `Contact: ${name}`,
       text: `Question: ${ask}\nEmail: ${email}\nMessage: ${text}`,
@@ -159,30 +126,20 @@ router.post("/sendmailContact", async (req, res) => {
 /* Send contact mail */
 router.post("/welcomemail", async (req, res) => {
   try {
-    const { clientId, clientSecret, refreshToken } = await JSON.parse(
-      req.secrets.gmail_keys.defaultValue.value
+    const secrets = await JSON.parse(
+      req.secrets.email_secrets.defaultValue.value
     );
-
-    const myOAuth2Client = new OAuth2(
-      clientId,
-      clientSecret,
-      "https://developers.google.com/oauthplayground"
-    );
-    myOAuth2Client.setCredentials({ refresh_token: refreshToken });
-    const accessToken = await myOAuth2Client.getAccessToken();
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.hostinger.com",
+      port: 465,
+      secure: true,
       auth: {
-        type: "OAuth2",
-        user: process.env.EMAIL,
-        clientId,
-        clientSecret,
-        refreshToken,
-        accessToken,
+        user: secrets.email,
+        pass: secrets.password,
       },
     });
     let mailOption = {
-      from: process.env.EMAIL,
+      from: secrets.email,
       to: req.body.email,
       subject: "Welcome to Flytant",
       text: `You have registered successfully`,
