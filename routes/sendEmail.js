@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
+const { google } = require("googleapis");
+const OAuth2 = google.auth.OAuth2;
 require("dotenv").config();
 
 /* Send Career Mail */
@@ -9,16 +11,28 @@ router.post("/sendmailCareer", async (req, res) => {
     const { career_mail } = await JSON.parse(
       req.secrets.contact_mails.defaultValue.value
     );
+    const { clientId, clientSecret, refreshToken } = await JSON.parse(
+      req.secrets.gmail_keys.defaultValue.value
+    );
+
+    const myOAuth2Client = new OAuth2(
+      clientId,
+      clientSecret,
+      "https://developers.google.com/oauthplayground"
+    );
+    myOAuth2Client.setCredentials({ refresh_token: refreshToken });
+    const accessToken = await myOAuth2Client.getAccessToken();
 
     const { ask, name, email, text, url } = await req.body;
-    let transporter = nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
+        type: "OAuth2",
         user: process.env.EMAIL,
-        pass: process.env.PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
+        clientId,
+        clientSecret,
+        refreshToken,
+        accessToken,
       },
     });
 
@@ -47,17 +61,29 @@ router.post("/sendmailBrandsContact", async (req, res) => {
     const { brandcontact_mail } = await JSON.parse(
       req.secrets.contact_mails.defaultValue.value
     );
+    const { clientId, clientSecret, refreshToken } = await JSON.parse(
+      req.secrets.gmail_keys.defaultValue.value
+    );
+
+    const myOAuth2Client = new OAuth2(
+      clientId,
+      clientSecret,
+      "https://developers.google.com/oauthplayground"
+    );
+    myOAuth2Client.setCredentials({ refresh_token: refreshToken });
+    const accessToken = await myOAuth2Client.getAccessToken();
 
     const { name, brandname, email, message, contact } = await req.body;
 
-    let transporter = nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
+        type: "OAuth2",
         user: process.env.EMAIL,
-        pass: process.env.PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
+        clientId,
+        clientSecret,
+        refreshToken,
+        accessToken,
       },
     });
 
@@ -86,19 +112,30 @@ router.post("/sendmailContact", async (req, res) => {
     const { contact_mail } = await JSON.parse(
       req.secrets.contact_mails.defaultValue.value
     );
+    const { clientId, clientSecret, refreshToken } = await JSON.parse(
+      req.secrets.gmail_keys.defaultValue.value
+    );
+
+    const myOAuth2Client = new OAuth2(
+      clientId,
+      clientSecret,
+      "https://developers.google.com/oauthplayground"
+    );
+    myOAuth2Client.setCredentials({ refresh_token: refreshToken });
+    const accessToken = await myOAuth2Client.getAccessToken();
     const { ask, name, email, text } = await req.body;
 
-    let transporter = nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
+        type: "OAuth2",
         user: process.env.EMAIL,
-        pass: process.env.PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
+        clientId,
+        clientSecret,
+        refreshToken,
+        accessToken,
       },
     });
-
     let mailOption = {
       from: process.env.EMAIL,
       to: contact_mail,
@@ -122,17 +159,28 @@ router.post("/sendmailContact", async (req, res) => {
 /* Send contact mail */
 router.post("/welcomemail", async (req, res) => {
   try {
-    let transporter = nodemailer.createTransport({
+    const { clientId, clientSecret, refreshToken } = await JSON.parse(
+      req.secrets.gmail_keys.defaultValue.value
+    );
+
+    const myOAuth2Client = new OAuth2(
+      clientId,
+      clientSecret,
+      "https://developers.google.com/oauthplayground"
+    );
+    myOAuth2Client.setCredentials({ refresh_token: refreshToken });
+    const accessToken = await myOAuth2Client.getAccessToken();
+    const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
+        type: "OAuth2",
         user: process.env.EMAIL,
-        pass: process.env.PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
+        clientId,
+        clientSecret,
+        refreshToken,
+        accessToken,
       },
     });
-
     let mailOption = {
       from: process.env.EMAIL,
       to: req.body.email,
