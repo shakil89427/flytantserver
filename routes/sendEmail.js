@@ -8,23 +8,20 @@ router.post("/sendmailCareer", async (req, res) => {
     const { career_mail } = await JSON.parse(
       req.secrets.contact_mails.defaultValue.value
     );
-    const secrets = await JSON.parse(
+    const { user, pass } = await JSON.parse(
       req.secrets.email_secrets.defaultValue.value
     );
     const transporter = nodemailer.createTransport({
       host: "smtp.hostinger.com",
       port: 465,
       secure: true,
-      auth: {
-        user: secrets.email,
-        pass: secrets.password,
-      },
+      auth: { user, pass },
     });
 
     const { ask, name, email, text, url } = await req.body;
 
     let mailOption = {
-      from: secrets.email,
+      from: user,
       to: career_mail,
       subject: `Career: ${name}`,
       text: `${ask}\nEmail: ${email}\nMessage: ${text} \nResume: ${url}`,
@@ -48,23 +45,20 @@ router.post("/sendmailBrandsContact", async (req, res) => {
     const { brandcontact_mail } = await JSON.parse(
       req.secrets.contact_mails.defaultValue.value
     );
-    const secrets = await JSON.parse(
+    const { user, pass } = await JSON.parse(
       req.secrets.email_secrets.defaultValue.value
     );
     const transporter = nodemailer.createTransport({
       host: "smtp.hostinger.com",
       port: 465,
       secure: true,
-      auth: {
-        user: secrets.email,
-        pass: secrets.password,
-      },
+      auth: { user, pass },
     });
 
     const { name, brandname, email, message, contact } = await req.body;
 
     let mailOption = {
-      from: secrets.email,
+      from: user,
       to: brandcontact_mail,
       subject: `Brands: ${name}`,
       text: `Name: ${name}\nEmail: ${email}\nContact: ${contact}\nBrand Name: ${brandname}\nMessage: ${message}`,
@@ -88,23 +82,20 @@ router.post("/sendmailContact", async (req, res) => {
     const { contact_mail } = await JSON.parse(
       req.secrets.contact_mails.defaultValue.value
     );
-    const secrets = await JSON.parse(
+    const { user, pass } = await JSON.parse(
       req.secrets.email_secrets.defaultValue.value
     );
     const transporter = nodemailer.createTransport({
       host: "smtp.hostinger.com",
       port: 465,
       secure: true,
-      auth: {
-        user: secrets.email,
-        pass: secrets.password,
-      },
+      auth: { user, pass },
     });
 
     const { ask, name, email, text } = await req.body;
 
     let mailOption = {
-      from: secrets.email,
+      from: user,
       to: contact_mail,
       subject: `Contact: ${name}`,
       text: `Question: ${ask}\nEmail: ${email}\nMessage: ${text}`,
@@ -126,21 +117,18 @@ router.post("/sendmailContact", async (req, res) => {
 /* Send contact mail */
 router.post("/welcomemail", async (req, res) => {
   try {
-    const secrets = await JSON.parse(
+    const { user, pass } = await JSON.parse(
       req.secrets.email_secrets.defaultValue.value
     );
     const transporter = nodemailer.createTransport({
       host: "smtp.hostinger.com",
       port: 465,
       secure: true,
-      auth: {
-        user: secrets.email,
-        pass: secrets.password,
-      },
+      auth: { user, pass },
     });
 
     let mailOption = {
-      from: secrets.email,
+      from: user,
       to: req.body.email,
       subject: "Welcome to Flytant",
       text: `You have registered successfully`,
