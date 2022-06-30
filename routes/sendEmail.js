@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
-require("dotenv").config();
 
 /* Send Career Mail */
 router.post("/sendmailCareer", async (req, res) => {
@@ -92,7 +91,6 @@ router.post("/sendmailContact", async (req, res) => {
     const secrets = await JSON.parse(
       req.secrets.email_secrets.defaultValue.value
     );
-
     const transporter = nodemailer.createTransport({
       host: "smtp.hostinger.com",
       port: 465,
@@ -140,6 +138,7 @@ router.post("/welcomemail", async (req, res) => {
         pass: secrets.password,
       },
     });
+
     let mailOption = {
       from: secrets.email,
       to: req.body.email,
