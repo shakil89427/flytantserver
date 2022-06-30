@@ -103,6 +103,8 @@ router.post("/sendmailContact", async (req, res) => {
       },
     });
 
+    const { ask, name, email, text } = await req.body;
+
     let mailOption = {
       from: secrets.email,
       to: contact_mail,
@@ -153,6 +155,7 @@ router.post("/welcomemail", async (req, res) => {
       }
     });
   } catch (err) {
+    console.log(err);
     res.status(500).send({ message: "Something went wrong" });
   }
 });
