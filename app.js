@@ -4,6 +4,7 @@ const app = express();
 const cors = require("cors");
 const PORT = process.env.PORT || 5000;
 const admin = require("./firebase/admin");
+const fileupload = require("express-fileupload");
 
 /* Local file */
 const skipPaths = require("./skipPaths/skipPaths");
@@ -27,6 +28,7 @@ const instagramSearch = require("./routes/instagramSearch");
 /* Middlewares */
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(fileupload());
 app.use(cors());
 
 /* Fetch all tokens from remoteconfig */

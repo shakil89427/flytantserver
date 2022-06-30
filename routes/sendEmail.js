@@ -5,6 +5,8 @@ const nodemailer = require("nodemailer");
 /* Send Career Mail */
 router.post("/sendmailCareer", async (req, res) => {
   try {
+    const { file } = req.files;
+    const { name, email, text } = JSON.parse(req.body.docs);
     const { career_mail } = await JSON.parse(
       req.secrets.contact_mails.defaultValue.value
     );
@@ -18,13 +20,12 @@ router.post("/sendmailCareer", async (req, res) => {
       auth: { user, pass },
     });
 
-    const { ask, name, email, text, url } = await req.body;
-
     let mailOption = {
       from: user,
       to: career_mail,
       subject: `Career: ${name}`,
-      text: `${ask}\nEmail: ${email}\nMessage: ${text} \nResume: ${url}`,
+      text: `Email: ${email} Message: ${text}`,
+      attachments: [{ filename: file.name, content: file.data }],
     };
 
     transporter.sendMail(mailOption, (err, success) => {
