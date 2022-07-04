@@ -13,7 +13,6 @@ router.post("/getvideo", async (req, res) => {
         },
       }
     );
-    console.log(data);
     res.send(data);
   } catch (err) {
     res.status(404).send("Not Found");
