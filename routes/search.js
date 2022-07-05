@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const { randomUUID } = require("crypto");
+const Twitter = require("twitter");
 
 router.post("/search", async (req, res) => {
   const keyword = req?.body?.keyword;
@@ -65,6 +66,12 @@ router.post("/search", async (req, res) => {
     });
   };
 
+  const modifyTwitter = (items) => {
+    items?.forEach((item) =>
+      allData.push({ randomId: randomUUID(), category: "Twitter", ...item })
+    );
+  };
+
   /* Search for data */
   const searchData = async () => {
     const promises = [];
@@ -74,6 +81,9 @@ router.post("/search", async (req, res) => {
     const youtubeKeys = await JSON.parse(
       req.secrets.youtube_keys.defaultValue.value
     );
+    const { consumerKey, consumerSecret, token, tokenSecret } =
+      await JSON.parse(req.secrets.twitter_tokens.defaultValue.value);
+
     const instagram = axios.get("https://www.googleapis.com/customsearch/v1", {
       params: {
         q: keyword,
@@ -93,7 +103,15 @@ router.post("/search", async (req, res) => {
       },
     });
 
-    promises.push(instagram, youtube);
+    const client = new Twitter({
+      consumer_key: consumerKey,
+      consumer_secret: consumerSecret,
+      access_token_key: token,
+      access_token_secret: tokenSecret,
+    });
+    const twitter = await client.get("users/search.json", { q: keyword });
+
+    promises.push(instagram, youtube, twitter);
 
     try {
       const response = await Promise.allSettled(promises);
@@ -103,6 +121,9 @@ router.post("/search", async (req, res) => {
         }
         if (item?.status === "fulfilled" && index === 1) {
           modifyYoutube(item?.value?.data?.items);
+        }
+        if (item?.status === "fulfilled" && index === 2) {
+          modifyTwitter(item?.value);
         }
       });
       res.send(allData);

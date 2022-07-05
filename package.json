@@ -21,6 +21,7 @@
     "moment": "^2.29.3",
     "nodemailer": "^6.7.5",
     "nodemon": "^2.0.16",
-    "razorpay": "^2.8.1"
+    "razorpay": "^2.8.1",
+    "twitter": "^1.7.1"
   }
 }
