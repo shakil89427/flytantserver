@@ -25,6 +25,7 @@ const getUser = require("./routes/getUser");
 const search = require("./routes/search");
 const instagramSearch = require("./routes/instagramSearch");
 const twitterSearch = require("./routes/twitterSearch");
+const contactInfo = require("./routes/contactInfo");
 
 /* Middlewares */
 app.use(express.urlencoded({ extended: true }));
@@ -70,6 +71,7 @@ app.use(getUser);
 app.use(search);
 app.use(instagramSearch);
 app.use(twitterSearch);
+app.use(contactInfo);
 
 /* Port listener */
 app.listen(PORT, () => {
