@@ -27,6 +27,7 @@ const instagramSearch = require("./routes/instagramSearch");
 const twitterSearch = require("./routes/twitterSearch");
 const contactInfo = require("./routes/contactInfo");
 const products = require("./routes/products");
+const influencersInstagram = require("./routes/influencersInstagram");
 
 /* Middlewares */
 app.use(express.urlencoded({ extended: true }));
@@ -74,6 +75,7 @@ app.use(instagramSearch);
 app.use(twitterSearch);
 app.use(contactInfo);
 app.use(products);
+app.use(influencersInstagram);
 
 /* Port listener */
 app.listen(PORT, () => {

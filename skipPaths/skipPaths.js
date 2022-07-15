@@ -9,6 +9,8 @@ const skip = [
   "/youtubeinfo",
   "/instagramsearch",
   "/gecourse",
+  "/contactinfo",
+  "/influencersinstagram",
 ];
 
 module.exports = skip;
