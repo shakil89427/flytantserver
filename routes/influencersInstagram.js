@@ -27,12 +27,18 @@ router.post("/influencersinstagram", async (req, res) => {
     let totalLikes = 0;
     let totalComments = 0;
     let totalPost = 0;
+    let dates = [];
 
-    edges.forEach(({ node: { edge_liked_by, edge_media_to_comment } }) => {
-      totalLikes = totalLikes + edge_liked_by.count;
-      totalComments = totalComments + edge_media_to_comment.count;
-      totalPost++;
-    });
+    edges.forEach(
+      ({
+        node: { edge_liked_by, edge_media_to_comment, taken_at_timestamp },
+      }) => {
+        totalLikes = totalLikes + edge_liked_by.count;
+        totalComments = totalComments + edge_media_to_comment.count;
+        totalPost++;
+        dates.push(taken_at_timestamp);
+      }
+    );
     const { data } = await axios.get(profile_pic_url, {
       responseType: "arraybuffer",
     });
@@ -43,6 +49,7 @@ router.post("/influencersinstagram", async (req, res) => {
       totalLikes,
       totalComments,
       totalPost,
+      dates,
       image,
     };
     res.send(finaldata);
