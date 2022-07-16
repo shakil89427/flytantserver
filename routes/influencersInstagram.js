@@ -40,8 +40,9 @@ router.post("/influencersinstagram", async (req, res) => {
     const finaldata = {
       following: edge_follow.count,
       followers: edge_followed_by.count,
-      likesPerPost: Math.round(totalLikes / totalPost),
-      commentsPerPost: Math.round(totalComments / totalPost),
+      totalLikes,
+      totalComments,
+      totalPost,
       image,
     };
     res.send(finaldata);
