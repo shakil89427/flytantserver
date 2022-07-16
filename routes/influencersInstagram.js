@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
+const moment = require("moment");
 
 router.post("/influencersinstagram", async (req, res) => {
   try {
@@ -28,6 +29,7 @@ router.post("/influencersinstagram", async (req, res) => {
     let totalComments = 0;
     let totalPost = 0;
     let dates = [];
+    let postPerWeek = 0;
 
     edges.forEach(
       ({
@@ -39,6 +41,14 @@ router.post("/influencersinstagram", async (req, res) => {
         dates.push(taken_at_timestamp);
       }
     );
+
+    if (dates?.length > 0) {
+      const first = moment.unix(dates[dates?.length - 1]);
+      const last = moment.unix(dates[0]);
+      const duration = last.diff(first, "milliseconds");
+      postPerWeek = Math.round((totalPost * 604800000) / duration);
+    }
+
     const { data } = await axios.get(profile_pic_url, {
       responseType: "arraybuffer",
     });
@@ -49,7 +59,7 @@ router.post("/influencersinstagram", async (req, res) => {
       totalLikes,
       totalComments,
       totalPost,
-      dates,
+      postPerWeek,
       image,
     };
     res.send(finaldata);
