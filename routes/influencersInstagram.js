@@ -35,8 +35,8 @@ router.post("/influencersinstagram", async (req, res) => {
       ({
         node: { edge_liked_by, edge_media_to_comment, taken_at_timestamp },
       }) => {
-        totalLikes = totalLikes + edge_liked_by.count;
-        totalComments = totalComments + edge_media_to_comment.count;
+        totalLikes = totalLikes + edge_liked_by.count || 0;
+        totalComments = totalComments + edge_media_to_comment.count || 0;
         totalPost++;
         dates.push(taken_at_timestamp);
       }
