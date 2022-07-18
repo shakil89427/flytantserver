@@ -44,6 +44,7 @@ router.post("/influencersinstagram", async (req, res) => {
         postPerWeek = Math.round((totalPost * 604800000) / duration);
       }
     } catch (err) {}
+
     const updatedData = {
       following: user?.edge_follow?.count,
       followers: user?.edge_followed_by?.count,
