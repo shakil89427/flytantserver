@@ -31,16 +31,14 @@ router.post("/influencersinstagram", async (req, res) => {
     let dates = [];
     let postPerWeek = 0;
 
-    edges.forEach(
-      ({
-        node: { edge_liked_by, edge_media_to_comment, taken_at_timestamp },
-      }) => {
-        totalLikes = totalLikes + edge_liked_by.count || 0;
-        totalComments = totalComments + edge_media_to_comment.count || 0;
-        totalPost++;
-        dates.push(taken_at_timestamp);
-      }
-    );
+    edges?.forEach((item) => {
+      const { edge_liked_by, edge_media_to_comment, taken_at_timestamp } =
+        item?.node;
+      totalLikes = totalLikes + edge_liked_by.count || 0;
+      totalComments = totalComments + edge_media_to_comment.count || 0;
+      totalPost++;
+      dates.push(taken_at_timestamp);
+    });
 
     if (dates?.length > 0) {
       const first = moment.unix(dates[dates?.length - 1]);
