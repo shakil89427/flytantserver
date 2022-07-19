@@ -34,7 +34,7 @@ router.post("/influencersinstagram", async (req, res) => {
         totalPost++;
         dates.push(taken_at_timestamp);
       } catch (err) {
-        res.status(404).send("modify error");
+        res.status(404).send("not found");
       }
     });
 
@@ -46,7 +46,7 @@ router.post("/influencersinstagram", async (req, res) => {
         postPerWeek = Math.round((totalPost * 604800000) / duration);
       }
     } catch (err) {
-      res.status(404).send("date error");
+      res.status(404).send("not found");
     }
 
     const updatedData = {
@@ -79,7 +79,7 @@ router.post("/influencersinstagram", async (req, res) => {
       );
       modifyData(user);
     } catch (err) {
-      res.status(404).send("fetch error");
+      res.status(404).send("not found");
     }
   };
 
