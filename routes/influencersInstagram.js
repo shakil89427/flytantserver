@@ -33,7 +33,9 @@ router.post("/influencersinstagram", async (req, res) => {
         totalComments = totalComments + edge_media_to_comment.count;
         totalPost++;
         dates.push(taken_at_timestamp);
-      } catch (err) {}
+      } catch (err) {
+        res.status(404).send("modify error");
+      }
     });
 
     try {
@@ -43,7 +45,9 @@ router.post("/influencersinstagram", async (req, res) => {
         const duration = last.diff(first, "milliseconds");
         postPerWeek = Math.round((totalPost * 604800000) / duration);
       }
-    } catch (err) {}
+    } catch (err) {
+      res.status(404).send("date error");
+    }
 
     const updatedData = {
       following: user?.edge_follow?.count,
@@ -75,7 +79,7 @@ router.post("/influencersinstagram", async (req, res) => {
       );
       modifyData(user);
     } catch (err) {
-      res.status(404).send("Not found");
+      res.status(404).send("fetch error");
     }
   };
 
