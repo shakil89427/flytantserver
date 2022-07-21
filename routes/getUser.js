@@ -31,7 +31,7 @@ router.post("/getuser", async (req, res) => {
         .get();
       const { socialCardEnabled, socialCard, username } = response.data();
       if (socialCardEnabled) {
-        const newData = { ...socialCard, username };
+        const newData = { ...socialCard, username, id: req.body.cardId };
         if (!req?.body?.userId) {
           res.send({ card: newData, follow: {} });
         } else {
