@@ -11,12 +11,8 @@ router.post("/getuser", async (req, res) => {
       .get();
     const { socialCardEnabled, socialCard, username } = userData.data();
     if (socialCardEnabled) {
-      if (!socialCard?.name || socialCard?.name === "") {
-        const newData = { ...socialCard, name: username };
-        res.send(newData);
-      } else {
-        res.send(socialCard);
-      }
+      const newData = { ...socialCard, username };
+      res.send(newData);
     } else {
       res.status(404).send("Not found");
     }
