@@ -38,6 +38,9 @@ app.use(cors());
 /* Fetch all tokens from remoteconfig */
 app.all("*", async (req, res, next) => {
   try {
+    if (req?.headers?.origin !== "https://flytant.com") {
+      return res.status(401).send("Cannot access");
+    }
     const matched = skipPaths?.find((item) => item === req.path);
     if (matched) {
       next();
